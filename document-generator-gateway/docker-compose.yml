@@ -1,0 +1,8 @@
+services:
+  document-generator-gateway:
+    build: .
+    container_name: document-generator-gateway
+    mem_limit: 512m
+    hostname: document-generator-api
+    ports:
+      - "8080:8080"
