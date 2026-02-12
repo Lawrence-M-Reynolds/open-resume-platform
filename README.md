@@ -13,3 +13,34 @@ docker build --build-arg JAR_FILE=build/libs/\*.jar -t document-generator .
 
 run:
 docker run -p 8080:8080 document-generator
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Build the docker containers
+### Start all containers
+````
+docker-compose up -d
+````
+
+### Stop all containers
+````
+docker-compose down
+````
+
+### Monitor logs
+````
+docker-compose logs -f
+````
