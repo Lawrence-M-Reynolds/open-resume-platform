@@ -1,3 +1,3 @@
 rootProject.name = "open-resume-platform"
 
-include("document-generator")
+include("document-generator-gateway")
