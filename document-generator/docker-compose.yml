@@ -1,0 +1,9 @@
+services:
+  document-generator:
+    image: pandoc/core
+    container_name: pandoc_container
+    command: server
+    mem_limit: 512m
+    hostname: pandoc-server
+    ports:
+      - "3030:3030"

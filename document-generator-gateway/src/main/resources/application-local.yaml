@@ -1,0 +1,3 @@
+pandoc:
+  client:
+    url: http://localhost:3030
