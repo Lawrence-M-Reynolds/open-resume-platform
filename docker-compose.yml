@@ -4,6 +4,8 @@ services:
     container_name: document-generator-gateway
     mem_limit: 512m
     hostname: document-generator-api
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
     ports:
       - "8080:8080"
     networks:
@@ -15,8 +17,6 @@ services:
     command: server
     mem_limit: 512m
     hostname: pandoc-server
-    ports:
-      - "3030:3030"
     networks:
       - document-generator_network
 
