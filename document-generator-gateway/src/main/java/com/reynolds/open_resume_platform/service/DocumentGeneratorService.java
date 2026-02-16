@@ -7,9 +7,9 @@ import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import java.lang.invoke.MethodHandles;
 
@@ -26,23 +26,27 @@ public class DocumentGeneratorService {
         this.restClient = restClient;
     }
 
-    public byte[] callService() {
+    public StreamingResponseBody callService() {
         Files files = new Files(getReferenceDoc());
         PandocCvRequest pandocCvRequest = new PandocCvRequest(getCvMarkdown(), FileType.DOCX, files);
-        logger.debug("pandocCvRequest: {}", pandocCvRequest);
+        logger.debug("Preparing Pandoc request for streaming...");
 
-        byte[] file = this.restClient.post()
-                .uri("")
-                .contentType(MediaType.APPLICATION_JSON)
-                .header("Accept", "application/octet-stream")
-                .body(pandocCvRequest)
-                .retrieve()
-                .body(byte[].class);
-
-        logger.debug("file as string: {}", new String(file));
-
-        return file;
+        return outputStream -> {
+            this.restClient.post()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .header("Accept", "application/octet-stream")
+                    .body(pandocCvRequest)
+                    .exchange((request, response) -> {
+                        try (var inputStream = response.getBody()) {
+                            inputStream.transferTo(outputStream);
+                        } catch (Exception e) {
+                            logger.error("Streaming failed", e);
+                        }
+                        return null;
+                    });
+        };
     }
+
     private static @NonNull String getCvMarkdown() {
         String cvMarkdown = """
                 ::: {custom-style="Title"}
