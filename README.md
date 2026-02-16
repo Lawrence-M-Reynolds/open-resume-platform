@@ -31,7 +31,7 @@ docker build --build-arg JAR_FILE=build/libs/\*.jar -t document-generator-gatewa
 
 run:
 docker run -p 8080:8080 document-generator-gateway
-
+       
 ## Build the docker containers
 ### Start all containers
 ````
