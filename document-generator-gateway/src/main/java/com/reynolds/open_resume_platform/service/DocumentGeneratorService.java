@@ -31,20 +31,18 @@ public class DocumentGeneratorService {
         PandocCvRequest pandocCvRequest = new PandocCvRequest(getCvMarkdown(), FileType.DOCX, files);
         logger.debug("Preparing Pandoc request for streaming...");
 
-        return outputStream -> {
-            this.restClient.post()
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .header("Accept", "application/octet-stream")
-                    .body(pandocCvRequest)
-                    .exchange((request, response) -> {
-                        try (var inputStream = response.getBody()) {
-                            inputStream.transferTo(outputStream);
-                        } catch (Exception e) {
-                            logger.error("Streaming failed", e);
-                        }
-                        return null;
-                    });
-        };
+        return outputStream -> this.restClient.post()
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Accept", "application/octet-stream")
+                .body(pandocCvRequest)
+                .exchange((request, response) -> {
+                    try (var inputStream = response.getBody()) {
+                        inputStream.transferTo(outputStream);
+                    } catch (Exception e) {
+                        logger.error("Streaming failed", e);
+                    }
+                    return null;
+                });
     }
 
     private static @NonNull String getCvMarkdown() {
