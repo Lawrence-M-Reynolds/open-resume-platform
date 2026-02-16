@@ -3,6 +3,9 @@ spring:
     name: open-resume-platform
   profiles:
     active: local
+  threads:
+    virtual:
+      enabled: true
 logging:
   level:
     com:
