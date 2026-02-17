@@ -3,14 +3,9 @@ spring:
     name: open-resume-platform
   profiles:
     active: local
-  threads:
-    virtual:
-      enabled: true
 logging:
   level:
     com:
       reynolds: DEBUG
-server:
-  port: 9000
-pandoc-client-config:
-    url: http://localhost:3030
+document-generator-gateway-client:
+    url: http://localhost:9000

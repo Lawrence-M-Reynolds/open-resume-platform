@@ -1,3 +1,2 @@
-pandoc:
-  client:
+pandoc-client-config:
     url: http://pandoc-server:3030

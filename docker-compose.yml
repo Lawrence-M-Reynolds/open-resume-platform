@@ -1,15 +1,27 @@
 services:
+  resume-builder-portal:
+    build: ./resume-builder-portal
+    container_name: resume-builder-portal
+    mem_limit: 512m
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - resume_builder_portal_network
+    ports:
+      - "8080:8080"
+
   document-generator-gateway:
     build: ./document-generator-gateway
     container_name: document-generator-gateway
     mem_limit: 512m
-    hostname: document-generator-api
+    hostname: document-generator-gateway
     environment:
       - SPRING_PROFILES_ACTIVE=docker
-    ports:
-      - "8080:8080"
     networks:
+      - resume_builder_portal_network
       - document-generator_network
+    ports:
+      - "9000:9000"
 
   document-generator:
     image: pandoc/core
@@ -19,6 +31,9 @@ services:
     hostname: pandoc-server
     networks:
       - document-generator_network
+    ports:
+      - "3030:3030"
 
 networks:
+  resume_builder_portal_network: {}
   document-generator_network: {}
