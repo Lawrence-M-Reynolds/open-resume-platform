@@ -1,6 +1,7 @@
 package com.reynolds.open_resume_platform.restcontrollers;
 
-import com.reynolds.open_resume_platform.service.DocumentGeneratorService;
+import com.reynolds.open_resume_platform.LrTestLib;
+import com.reynolds.open_resume_platform.service.DocumentGeneratorGatewayService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,30 +12,31 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import java.lang.invoke.MethodHandles;
 
 @RestController
-public class CvGenerationRestController {
+public class TestController {
 
 	private static final Logger logger = LoggerFactory
 			.getLogger(MethodHandles.lookup().lookupClass());
 
-	// TODO - remove autwire
-	@Autowired
-	private DocumentGeneratorService documentGeneratorService;
+	private DocumentGeneratorGatewayService documentGeneratorGatewayService;
 
-	@RequestMapping(value = "/", method = RequestMethod.POST)
-	public ResponseEntity<StreamingResponseBody> home(@RequestBody String cvMarkdown) {
+	public TestController(DocumentGeneratorGatewayService documentGeneratorGatewayService) {
+		this.documentGeneratorGatewayService = documentGeneratorGatewayService;
+	}
 
-		logger.debug("CvGenerationRestController called");
+	@RequestMapping(value = "/test", method = RequestMethod.GET)
+	public ResponseEntity<byte[]> test() {
 
-		StreamingResponseBody streamingResponseBody = documentGeneratorService.callService(cvMarkdown);
+		logger.debug("TestController called");
+
+		byte[] cvData = documentGeneratorGatewayService.createCv(LrTestLib.getCvMarkdown());
 
 		return ResponseEntity.ok()
 				.contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.wordprocessingml.document"))
 				.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + "test.docx" + "\"")
-				.body(streamingResponseBody);
+				.body(cvData);
 	}
 }

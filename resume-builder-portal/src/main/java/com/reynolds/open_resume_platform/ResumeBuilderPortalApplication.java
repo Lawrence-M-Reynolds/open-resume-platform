@@ -8,9 +8,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 @SpringBootApplication
 @ConfigurationPropertiesScan
-public class OpenResumePlatformApplication {
+public class ResumeBuilderPortalApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(OpenResumePlatformApplication.class, args);
+		SpringApplication.run(ResumeBuilderPortalApplication.class, args);
 	}
 }

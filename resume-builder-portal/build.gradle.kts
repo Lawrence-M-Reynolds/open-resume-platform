@@ -26,6 +26,7 @@ repositories {
 
 dependencies {
 	implementation(project(":open-resume-lib"))
+
 	implementation("org.springframework.boot:spring-boot-starter-webmvc")
 	compileOnly("org.projectlombok:lombok")
 	//developmentOnly("org.springframework.boot:spring-boot-docker-compose")
