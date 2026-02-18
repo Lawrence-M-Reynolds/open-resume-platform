@@ -1,7 +1,7 @@
 package com.reynolds.open_resume_platform.client;
 
+import com.reynolds.open_resume_platform.portal.dto.CvGenerationRequest;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.service.annotation.GetExchange;
 import org.springframework.web.service.annotation.HttpExchange;
 import org.springframework.web.service.annotation.PostExchange;
 
@@ -9,5 +9,5 @@ import org.springframework.web.service.annotation.PostExchange;
 public interface DocumentGeneratorGatewayClient {
 
     @PostExchange
-    byte[] generate(@RequestBody String markdown);
+    byte[] generate(@RequestBody CvGenerationRequest cvGenerationRequest);
 }

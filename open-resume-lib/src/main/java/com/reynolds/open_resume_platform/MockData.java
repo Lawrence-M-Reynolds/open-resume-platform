@@ -5,7 +5,10 @@ package com.reynolds.open_resume_platform;
 
 import org.jspecify.annotations.NonNull;
 
-public class LrTestLib {
+public class MockData {
+
+    public static final String defaultTemplateId = "default-template";
+
     public static @NonNull String getCvMarkdown() {
         String cvMarkdown = """
                 ::: {custom-style="Title"}

@@ -8,6 +8,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class LrTestLibTest {
     @Test void someLibraryMethodReturnsTrue() {
-        assertNotNull(LrTestLib.getCvMarkdown());
+        assertNotNull(MockData.getCvMarkdown());
     }
 }
