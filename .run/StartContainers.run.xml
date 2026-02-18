@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="StartContainers" type="CompoundRunConfigurationType">
+    <toRun name="docker-compose.yml: Compose Deployment" type="docker-deploy" />
+    <toRun name="open-resume-platform [build]" type="GradleRunConfiguration" />
+    <method v="2" />
+  </configuration>
+</component>
