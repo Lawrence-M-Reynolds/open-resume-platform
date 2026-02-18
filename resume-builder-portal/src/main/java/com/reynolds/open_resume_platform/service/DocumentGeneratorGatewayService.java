@@ -1,6 +1,9 @@
 package com.reynolds.open_resume_platform.service;
 
+import com.reynolds.open_resume_platform.MockData;
 import com.reynolds.open_resume_platform.client.DocumentGeneratorGatewayClient;
+import com.reynolds.open_resume_platform.portal.dto.CvGenerationRequest;
+import com.reynolds.open_resume_platform.portal.dto.FileType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -21,7 +24,8 @@ public class DocumentGeneratorGatewayService {
 
     public byte[] createCv(String markdown) {
 
-        byte[] cvData = documentGeneratorGatewayClient.generate(markdown);
-        return cvData;
+        CvGenerationRequest cvGenerationRequest = new CvGenerationRequest(MockData.defaultTemplateId, FileType.DOCX, markdown);
+
+        return documentGeneratorGatewayClient.generate(cvGenerationRequest);
     }
 }

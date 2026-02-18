@@ -1,9 +1,6 @@
 package com.reynolds.open_resume_platform.service;
 
-import com.reynolds.open_resume_platform.LrTestLib;
-import com.reynolds.open_resume_platform.dto.FileType;
-import com.reynolds.open_resume_platform.dto.Files;
-import com.reynolds.open_resume_platform.dto.PandocCvRequest;
+import com.reynolds.open_resume_platform.dto.PandocFileGenerationRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -26,15 +23,16 @@ public class DocumentGeneratorService {
         this.restClient = restClient;
     }
 
-    public StreamingResponseBody callService(String cvMarkdown) {
-        Files files = new Files(LrTestLib.getReferenceDoc());
-        PandocCvRequest pandocCvRequest = new PandocCvRequest(cvMarkdown, FileType.DOCX, files);
+    public StreamingResponseBody callService(String base64TemplateVal, String fileConversionType, String cvMarkdown) {
+        PandocFileGenerationRequest.Files files = new PandocFileGenerationRequest.Files(base64TemplateVal);
+        PandocFileGenerationRequest pandocFileGenerationRequest =
+                new PandocFileGenerationRequest(cvMarkdown, fileConversionType, files);
         logger.debug("Preparing Pandoc request for streaming...");
 
         return outputStream -> this.restClient.post()
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Accept", "application/octet-stream")
-                .body(pandocCvRequest)
+                .body(pandocFileGenerationRequest)
                 .exchange((request, response) -> {
                     try (var inputStream = response.getBody()) {
                         inputStream.transferTo(outputStream);
