@@ -20,8 +20,6 @@ services:
     networks:
       - resume_builder_portal_network
       - document-generator_network
-    ports:
-      - "9000:9000"
 
   document-generator:
     image: pandoc/core
@@ -31,8 +29,6 @@ services:
     hostname: pandoc-server
     networks:
       - document-generator_network
-    ports:
-      - "3030:3030"
 
 networks:
   resume_builder_portal_network: {}
