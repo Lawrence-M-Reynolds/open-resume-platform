@@ -2,10 +2,10 @@
   "$schema": "https://railway.app/railway.schema.json",
   "build": {
     "builder": "RAILPACK",
-    "buildCommand": "ls -la / && ls -la .."
+    "buildCommand": "./gradlew :document-generator-gateway:build -x test"
   },
   "deploy": {
-    "startCommand": "java -Xmx512m -jar build/libs/app.jar",
+    "startCommand": "java -Xmx512m -jar document-generator-gateway/build/libs/app.jar",
     "healthcheckPath": "/actuator/health",
     "restartPolicyType": "ON_FAILURE"
   }

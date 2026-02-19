@@ -5,7 +5,6 @@
     "buildCommand": "./gradlew :resume-builder-portal:build -x test"
   },
   "deploy": {
-    "startCommand": "java -Xmx512m -jar resume-builder-portal/build/libs/app.jar",
     "healthcheckPath": "/actuator/health",
     "restartPolicyType": "ON_FAILURE"
   }
