@@ -28,6 +28,16 @@ subprojects {
 		}
 	}
 
+	plugins.withType<org.springframework.boot.gradle.plugin.SpringBootPlugin> {
+		tasks.named<Jar>("jar") {
+			enabled = false
+		}
+
+		tasks.named<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
+			archiveFileName.set("app.jar")
+		}
+	}
+
 	tasks.withType<Test> {
 		useJUnitPlatform()
 	}
