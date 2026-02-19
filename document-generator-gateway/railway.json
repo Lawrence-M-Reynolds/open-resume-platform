@@ -2,7 +2,7 @@
   "$schema": "https://railway.app/railway.schema.json",
   "build": {
     "builder": "RAILPACK",
-    "buildCommand": "echo '--- PWN ---' && pwd && echo '--- ROOT CONTENT ---' && ls -la .. && echo '--- LOCAL CONTENT ---' && ls -la && ./../gradlew :document-generator-gateway:build -x test"
+    "buildCommand": "pwd"
   },
   "deploy": {
     "startCommand": "java -Xmx512m -jar build/libs/app.jar",
