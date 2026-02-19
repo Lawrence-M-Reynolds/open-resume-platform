@@ -1,0 +1,12 @@
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "build": {
+    "builder": "NIXPACKS",
+    "buildCommand": "./../gradlew :gateway-service:build -x test"
+  },
+  "deploy": {
+    "startCommand": "java -Xmx512m -jar build/libs/document-generator-gateway-0.0.1-SNAPSHOT.jar",
+    "healthcheckPath": "/actuator/health",
+    "restartPolicyType": "ON_FAILURE"
+  }
+}
