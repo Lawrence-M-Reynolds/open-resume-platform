@@ -1,0 +1,4 @@
+server:
+  port: 8080
+document-generator-gateway-client:
+    url: http://gateway.railway.internal:8080

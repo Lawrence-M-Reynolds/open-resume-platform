@@ -5,7 +5,7 @@
     "buildCommand": "./gradlew :document-generator-gateway:bootJar -x test"
   },
   "deploy": {
-    "startCommand": "java -Xmx512m -jar document-generator-gateway/build/libs/app.jar --server.port=8080",
+    "startCommand": "java -Xmx512m -jar document-generator-gateway/build/libs/app.jar --spring.profiles.active=railway",
     "healthcheckPath": "/actuator/health",
     "restartPolicyType": "ON_FAILURE"
   }
