@@ -6,6 +6,15 @@ spring:
   threads:
     virtual:
       enabled: true
+# Make the health endpoint always return details
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: always
 logging:
   level:
     com:
