@@ -1,4 +1,4 @@
 server:
   port: 8080
 pandoc-client-config:
-    url: http://pandoc-server.railway.internal:8080
+    url: http://pandoc-server.railway.internal:9082
