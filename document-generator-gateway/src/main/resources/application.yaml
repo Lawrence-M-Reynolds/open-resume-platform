@@ -13,4 +13,4 @@ logging:
 server:
   port: 9000
 pandoc-client-config:
-    url: http://localhost:3030
+    url: http://localhost:8080/convert

@@ -1,2 +1,2 @@
 pandoc-client-config:
-    url: http://pandoc-server:3030
+    url: http://pandoc-server:8080/convert
