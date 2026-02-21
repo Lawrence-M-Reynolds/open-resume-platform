@@ -17,15 +17,18 @@ public class ResumeDocxServiceImpl implements ResumeDocxService {
 
     private final ResumeService resumeService;
     private final ResumeVersionService resumeVersionService;
+    private final ResumeMarkdownAssembler markdownAssembler;
     private final DocumentGeneratorGatewayService documentGeneratorGatewayService;
     private final GeneratedDocumentRepository generatedDocumentRepository;
 
     public ResumeDocxServiceImpl(ResumeService resumeService,
                                  ResumeVersionService resumeVersionService,
+                                 ResumeMarkdownAssembler markdownAssembler,
                                  DocumentGeneratorGatewayService documentGeneratorGatewayService,
                                  GeneratedDocumentRepository generatedDocumentRepository) {
         this.resumeService = resumeService;
         this.resumeVersionService = resumeVersionService;
+        this.markdownAssembler = markdownAssembler;
         this.documentGeneratorGatewayService = documentGeneratorGatewayService;
         this.generatedDocumentRepository = generatedDocumentRepository;
     }
@@ -47,7 +50,8 @@ public class ResumeDocxServiceImpl implements ResumeDocxService {
             bytesOpt = resumeService.getById(resumeId)
                     .map(resume -> {
                         String t = effectiveTemplateId != null ? effectiveTemplateId : resume.templateId();
-                        return documentGeneratorGatewayService.createCv(t, resume.markdown());
+                        String markdown = markdownAssembler.assembleMarkdown(resumeId);
+                        return documentGeneratorGatewayService.createCv(t, markdown);
                     });
         }
 

@@ -6,16 +6,21 @@ import com.reynolds.open_resume_platform.documents.repository.InMemoryGeneratedD
 import com.reynolds.open_resume_platform.resumes.command.CreateResumeCommand;
 import com.reynolds.open_resume_platform.resumes.command.CreateResumeVersionCommand;
 import com.reynolds.open_resume_platform.resumes.domain.Resume;
+import com.reynolds.open_resume_platform.resumes.domain.ResumeSection;
 import com.reynolds.open_resume_platform.resumes.domain.ResumeVersion;
 import com.reynolds.open_resume_platform.resumes.repository.InMemoryResumeRepository;
 import com.reynolds.open_resume_platform.resumes.repository.InMemoryResumeVersionRepository;
+import com.reynolds.open_resume_platform.resumes.repository.InMemorySectionRepository;
 import com.reynolds.open_resume_platform.resumes.repository.ResumeRepository;
 import com.reynolds.open_resume_platform.resumes.repository.ResumeVersionRepository;
+import com.reynolds.open_resume_platform.resumes.repository.SectionRepository;
 import com.reynolds.open_resume_platform.service.DocumentGeneratorGatewayService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -32,19 +37,22 @@ class ResumeDocxServiceTest {
     private ResumeVersionService resumeVersionService;
     private DocumentGeneratorGatewayService documentGeneratorGatewayService;
     private GeneratedDocumentRepository generatedDocumentRepository;
+    private SectionRepository sectionRepository;
 
     @BeforeEach
     void setUp() {
         ResumeRepository resumeRepository = new InMemoryResumeRepository();
         ResumeVersionRepository versionRepository = new InMemoryResumeVersionRepository();
+        sectionRepository = new InMemorySectionRepository();
+        ResumeMarkdownAssembler markdownAssembler = new ResumeMarkdownAssembler(resumeRepository, sectionRepository);
         generatedDocumentRepository = new InMemoryGeneratedDocumentRepository();
         resumeService = new ResumeServiceImpl(resumeRepository);
-        resumeVersionService = new ResumeVersionService(resumeRepository, versionRepository);
+        resumeVersionService = new ResumeVersionService(resumeRepository, versionRepository, markdownAssembler);
         documentGeneratorGatewayService = mock(DocumentGeneratorGatewayService.class);
         when(documentGeneratorGatewayService.createCv(eq("t1"), eq("# Hello\n\nContent"))).thenReturn(new byte[]{1, 2, 3});
         when(documentGeneratorGatewayService.createCv(eq("t-ver"), eq("# Version content"))).thenReturn(new byte[]{4, 5, 6});
         when(documentGeneratorGatewayService.createCv(eq("override-t"), eq("# Hello\n\nContent"))).thenReturn(new byte[]{7, 8, 9});
-        docxService = new ResumeDocxServiceImpl(resumeService, resumeVersionService, documentGeneratorGatewayService, generatedDocumentRepository);
+        docxService = new ResumeDocxServiceImpl(resumeService, resumeVersionService, markdownAssembler, documentGeneratorGatewayService, generatedDocumentRepository);
     }
 
     @Test
@@ -124,5 +132,39 @@ class ResumeDocxServiceTest {
         Optional<GenerateDocxResponse> result = docxService.generate(resumeB.id(), versionA.id(), null);
 
         assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void generate_whenResumeHasSections_usesAssembledMarkdown() {
+        Resume resume = resumeService.create(new CreateResumeCommand(
+                "My Resume", null, null, "t1", "# Legacy"
+        ));
+        Instant now = Instant.now();
+        sectionRepository.save(new ResumeSection(
+                UUID.randomUUID().toString(),
+                resume.id(),
+                "Profile",
+                "Profile content",
+                1,
+                now,
+                now
+        ));
+        sectionRepository.save(new ResumeSection(
+                UUID.randomUUID().toString(),
+                resume.id(),
+                "Skills",
+                "Skills content",
+                2,
+                now,
+                now
+        ));
+        String assembled = "## Profile\n\nProfile content\n\n## Skills\n\nSkills content";
+        when(documentGeneratorGatewayService.createCv(eq("t1"), eq(assembled))).thenReturn(new byte[]{10, 11});
+
+        Optional<GenerateDocxResponse> result = docxService.generate(resume.id(), null, null);
+
+        assertTrue(result.isPresent());
+        verify(documentGeneratorGatewayService).createCv(eq("t1"), eq(assembled));
+        assertArrayEquals(new byte[]{10, 11}, generatedDocumentRepository.getContent(result.get().documentId()).orElseThrow());
     }
 }

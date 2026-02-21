@@ -17,15 +17,17 @@ public class ResumeVersionService {
 
     private final ResumeRepository resumeRepository;
     private final ResumeVersionRepository versionRepository;
+    private final ResumeMarkdownAssembler markdownAssembler;
 
-    public ResumeVersionService(ResumeRepository resumeRepository, ResumeVersionRepository versionRepository) {
+    public ResumeVersionService(ResumeRepository resumeRepository, ResumeVersionRepository versionRepository, ResumeMarkdownAssembler markdownAssembler) {
         this.resumeRepository = resumeRepository;
         this.versionRepository = versionRepository;
+        this.markdownAssembler = markdownAssembler;
     }
 
     /**
      * Creates a version snapshot for the given resume. If markdown or templateId are omitted in the command,
-     * the current resume's values are used. versionNo is the next sequential number for this resume.
+     * the current effective content is used (assembled from sections if any, else resume markdown).
      */
     public Optional<ResumeVersion> create(String resumeId, CreateResumeVersionCommand command) {
         return resumeRepository.findById(resumeId)
@@ -35,7 +37,7 @@ public class ResumeVersionService {
                     if (label != null && label.isEmpty()) label = null;
                     String markdown = command.markdown() != null && !command.markdown().isBlank()
                             ? command.markdown().trim()
-                            : resume.markdown();
+                            : markdownAssembler.assembleMarkdown(resumeId);
                     String templateId = command.templateId() != null && !command.templateId().isBlank()
                             ? command.templateId().trim()
                             : resume.templateId();
