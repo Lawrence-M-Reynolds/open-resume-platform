@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { listResumes } from '../api/resumes.js';
 import LoadingSkeleton from '../components/LoadingSkeleton.jsx';
 import { formatDate } from '../utils/date.js';
@@ -59,6 +60,17 @@ export default function Dashboard() {
   return (
     <div>
       <h1 className="text-2xl font-semibold text-gray-800 mb-6">Resumes</h1>
+      {resumes.length === 0 ? (
+        <div className="bg-surface rounded-lg border border-gray-200 shadow-sm p-8 text-center">
+          <p className="text-muted mb-4">No resumes yet.</p>
+          <Link
+            to="/resumes/new"
+            className="inline-block px-4 py-2 bg-primary text-white rounded font-medium hover:bg-primary-dark transition-colors duration-200"
+          >
+            Create your first resume
+          </Link>
+        </div>
+      ) : (
       <div className="space-y-4">
         {resumes.map((r) => (
           <div
@@ -75,6 +87,7 @@ export default function Dashboard() {
           </div>
         ))}
       </div>
+      )}
     </div>
   );
 }
