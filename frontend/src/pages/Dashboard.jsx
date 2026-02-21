@@ -73,9 +73,10 @@ export default function Dashboard() {
       ) : (
       <div className="space-y-4">
         {resumes.map((r) => (
-          <div
+          <Link
             key={r.id}
-            className="bg-surface rounded-lg border border-gray-200 shadow-sm p-5 transition-all duration-200 ease-out hover:shadow-md hover:-translate-y-0.5 hover:border-primary-light"
+            to={`/resumes/${r.id}`}
+            className="block bg-surface rounded-lg border border-gray-200 shadow-sm p-5 transition-all duration-200 ease-out hover:shadow-md hover:-translate-y-0.5 hover:border-primary-light no-underline text-inherit"
           >
             <div className="font-semibold text-gray-900">{r.title}</div>
             <div className="text-muted text-sm mt-1">
@@ -84,7 +85,7 @@ export default function Dashboard() {
             <div className="text-muted text-sm mt-1">
               Updated {formatDate(r.updatedAt)}
             </div>
-          </div>
+          </Link>
         ))}
       </div>
       )}
