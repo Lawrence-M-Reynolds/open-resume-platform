@@ -1,4 +1,18 @@
 services:
+  front-end-react:
+    build:
+      context: ./frontend
+      # Passing the API URL so React knows where to send requests
+      args:
+        - REACT_APP_API_URL=http://localhost:8081
+    container_name: resume-builder-frontend
+    ports:
+      - "80:80" # Map Windows 3000 to Nginx 80
+    networks:
+      - front-end_network
+    depends_on:
+      - resume-builder-portal
+
   resume-builder-portal:
     build: ./resume-builder-portal
     container_name: resume-builder-portal
@@ -7,6 +21,7 @@ services:
       - SPRING_PROFILES_ACTIVE=docker
     networks:
       - resume_builder_portal_network
+      - front-end_network
     ports:
       - "8081:8080"
 
@@ -32,3 +47,4 @@ services:
 networks:
   resume_builder_portal_network: {}
   document-generator_network: {}
+  front-end_network: {}
