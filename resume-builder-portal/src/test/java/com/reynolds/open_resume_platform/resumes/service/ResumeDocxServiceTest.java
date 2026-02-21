@@ -37,6 +37,7 @@ class ResumeDocxServiceTest {
         documentGeneratorGatewayService = mock(DocumentGeneratorGatewayService.class);
         when(documentGeneratorGatewayService.createCv(eq("t1"), eq("# Hello\n\nContent"))).thenReturn(new byte[]{1, 2, 3});
         when(documentGeneratorGatewayService.createCv(eq("t-ver"), eq("# Version content"))).thenReturn(new byte[]{4, 5, 6});
+        when(documentGeneratorGatewayService.createCv(eq("override-t"), eq("# Hello\n\nContent"))).thenReturn(new byte[]{7, 8, 9});
         docxService = new ResumeDocxServiceImpl(resumeService, resumeVersionService, documentGeneratorGatewayService);
     }
 
@@ -46,7 +47,7 @@ class ResumeDocxServiceTest {
                 "My Resume", null, null, "t1", "# Hello\n\nContent"
         ));
 
-        Optional<byte[]> result = docxService.generate(resume.id(), null);
+        Optional<byte[]> result = docxService.generate(resume.id(), null, null);
 
         assertTrue(result.isPresent());
         assertArrayEquals(new byte[]{1, 2, 3}, result.get());
@@ -54,7 +55,7 @@ class ResumeDocxServiceTest {
 
     @Test
     void generate_returnsEmptyWhenResumeNotFound() {
-        Optional<byte[]> result = docxService.generate("non-existent-id", null);
+        Optional<byte[]> result = docxService.generate("non-existent-id", null, null);
 
         assertTrue(result.isEmpty());
     }
@@ -70,11 +71,24 @@ class ResumeDocxServiceTest {
                 "t-ver"
         )).orElseThrow();
 
-        Optional<byte[]> result = docxService.generate(resume.id(), version.id());
+        Optional<byte[]> result = docxService.generate(resume.id(), version.id(), null);
 
         assertTrue(result.isPresent());
         assertArrayEquals(new byte[]{4, 5, 6}, result.get());
         verify(documentGeneratorGatewayService).createCv(eq("t-ver"), eq("# Version content"));
+    }
+
+    @Test
+    void generate_withTemplateId_overridesResumeTemplate() {
+        Resume resume = resumeService.create(new CreateResumeCommand(
+                "My Resume", null, null, "t1", "# Hello\n\nContent"
+        ));
+
+        Optional<byte[]> result = docxService.generate(resume.id(), null, "override-t");
+
+        assertTrue(result.isPresent());
+        assertArrayEquals(new byte[]{7, 8, 9}, result.get());
+        verify(documentGeneratorGatewayService).createCv(eq("override-t"), eq("# Hello\n\nContent"));
     }
 
     @Test
@@ -83,7 +97,7 @@ class ResumeDocxServiceTest {
                 "My Resume", null, null, "t1", "# Content"
         ));
 
-        Optional<byte[]> result = docxService.generate(resume.id(), "non-existent-version-id");
+        Optional<byte[]> result = docxService.generate(resume.id(), "non-existent-version-id", null);
 
         assertTrue(result.isEmpty());
     }
@@ -94,7 +108,7 @@ class ResumeDocxServiceTest {
         Resume resumeB = resumeService.create(new CreateResumeCommand("Resume B", null, null, "t1", "# B"));
         ResumeVersion versionA = resumeVersionService.create(resumeA.id(), new CreateResumeVersionCommand(null, null, null)).orElseThrow();
 
-        Optional<byte[]> result = docxService.generate(resumeB.id(), versionA.id());
+        Optional<byte[]> result = docxService.generate(resumeB.id(), versionA.id(), null);
 
         assertTrue(result.isEmpty());
     }

@@ -21,13 +21,20 @@ public class ResumeDocxServiceImpl implements ResumeDocxService {
     }
 
     @Override
-    public Optional<byte[]> generate(String resumeId, String versionId) {
+    public Optional<byte[]> generate(String resumeId, String versionId, String templateId) {
+        String effectiveTemplateId = (templateId != null && !templateId.isBlank()) ? templateId.trim() : null;
         if (versionId != null && !versionId.isBlank()) {
             return resumeVersionService.getById(versionId)
                     .filter(v -> resumeId.equals(v.resumeId()))
-                    .map(version -> documentGeneratorGatewayService.createCv(version.templateId(), version.markdown()));
+                    .map(version -> {
+                        String t = effectiveTemplateId != null ? effectiveTemplateId : version.templateId();
+                        return documentGeneratorGatewayService.createCv(t, version.markdown());
+                    });
         }
         return resumeService.getById(resumeId)
-                .map(resume -> documentGeneratorGatewayService.createCv(resume.templateId(), resume.markdown()));
+                .map(resume -> {
+                    String t = effectiveTemplateId != null ? effectiveTemplateId : resume.templateId();
+                    return documentGeneratorGatewayService.createCv(t, resume.markdown());
+                });
     }
 }
