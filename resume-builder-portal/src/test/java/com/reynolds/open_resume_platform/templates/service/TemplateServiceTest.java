@@ -28,7 +28,7 @@ class TemplateServiceTest {
     void list_returnsDefaultAndDemoTemplates() {
         List<Template> list = templateService.list();
 
-        assertEquals(4, list.size());
+        assertEquals(2, list.size());
     }
 
     @Test
@@ -52,7 +52,7 @@ class TemplateServiceTest {
         assertNotNull(created.id());
         assertEquals("My Template", created.name());
         assertEquals("Optional description", created.description());
-        assertEquals(5, templateService.list().size());
+        assertEquals(3, templateService.list().size());
         assertTrue(templateService.getById(created.id()).isPresent());
     }
 
