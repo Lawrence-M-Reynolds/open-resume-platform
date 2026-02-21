@@ -2,7 +2,107 @@
 @tailwind components;
 @tailwind utilities;
 
+html.theme-light {
+  color-scheme: light;
+}
+
+html.theme-dark {
+  --color-primary: 59 130 246;
+  --color-primary-light: 30 58 138;
+  --color-primary-dark: 37 99 235;
+  --color-surface: 17 24 39;
+  --color-background: 11 18 32;
+  --color-muted: 148 163 184;
+  --color-success: 74 222 128;
+  --color-error: 248 113 113;
+
+  --ui-gray-50: 30 41 59;
+  --ui-gray-100: 31 41 55;
+  --ui-gray-200: 51 65 85;
+  --ui-gray-300: 71 85 105;
+  --ui-gray-500: 148 163 184;
+  --ui-gray-600: 203 213 225;
+  --ui-gray-700: 226 232 240;
+  --ui-gray-800: 241 245 249;
+  --ui-gray-900: 248 250 252;
+
+  color-scheme: dark;
+}
+
+html.theme-forest {
+  --color-primary: 22 101 52;
+  --color-primary-light: 220 252 231;
+  --color-primary-dark: 21 128 61;
+  --color-surface: 248 250 246;
+  --color-background: 242 247 241;
+  --color-muted: 74 107 84;
+  --color-success: 21 128 61;
+  --color-error: 185 28 28;
+
+  --ui-gray-50: 248 250 246;
+  --ui-gray-100: 239 244 236;
+  --ui-gray-200: 217 228 214;
+  --ui-gray-300: 184 202 178;
+  --ui-gray-500: 106 129 99;
+  --ui-gray-600: 77 103 72;
+  --ui-gray-700: 50 79 49;
+  --ui-gray-800: 34 61 35;
+  --ui-gray-900: 22 39 24;
+
+  color-scheme: light;
+}
+
+html.theme-sunset {
+  --color-primary: 194 65 12;
+  --color-primary-light: 255 237 213;
+  --color-primary-dark: 154 52 18;
+  --color-surface: 255 251 245;
+  --color-background: 255 247 237;
+  --color-muted: 146 64 14;
+  --color-success: 22 163 74;
+  --color-error: 185 28 28;
+
+  --ui-gray-50: 255 251 245;
+  --ui-gray-100: 254 243 226;
+  --ui-gray-200: 238 220 193;
+  --ui-gray-300: 215 193 161;
+  --ui-gray-500: 146 112 82;
+  --ui-gray-600: 120 88 61;
+  --ui-gray-700: 96 66 44;
+  --ui-gray-800: 66 45 31;
+  --ui-gray-900: 43 28 18;
+
+  color-scheme: light;
+}
+
 @layer base {
+  :root {
+    --app-font-scale: 1;
+
+    --color-primary: 30 64 175;
+    --color-primary-light: 219 234 254;
+    --color-primary-dark: 30 58 138;
+    --color-surface: 255 255 255;
+    --color-background: 248 250 252;
+    --color-muted: 100 116 139;
+    --color-success: 22 163 74;
+    --color-error: 220 38 38;
+
+    --ui-gray-50: 249 250 251;
+    --ui-gray-100: 243 244 246;
+    --ui-gray-200: 229 231 235;
+    --ui-gray-300: 209 213 219;
+    --ui-gray-500: 107 114 128;
+    --ui-gray-600: 75 85 99;
+    --ui-gray-700: 55 65 81;
+    --ui-gray-800: 31 41 55;
+    --ui-gray-900: 17 24 39;
+  }
+
+  html {
+    font-size: calc(16px * var(--app-font-scale));
+  }
+
   html,
   body,
   #root {
@@ -10,8 +110,109 @@
   }
 
   body {
-    @apply font-sans text-gray-800 bg-background antialiased;
+    @apply font-sans antialiased;
+    color: rgb(var(--ui-gray-800));
+    background-color: rgb(var(--color-background));
+    transition:
+      color 200ms ease,
+      background-color 200ms ease,
+      border-color 200ms ease;
   }
+}
+
+@layer utilities {
+  .text-gray-500 {
+    color: rgb(var(--ui-gray-500));
+  }
+
+  .text-gray-600 {
+    color: rgb(var(--ui-gray-600));
+  }
+
+  .text-gray-700 {
+    color: rgb(var(--ui-gray-700));
+  }
+
+  .text-gray-800 {
+    color: rgb(var(--ui-gray-800));
+  }
+
+  .text-gray-900 {
+    color: rgb(var(--ui-gray-900));
+  }
+
+  .bg-gray-50 {
+    background-color: rgb(var(--ui-gray-50));
+  }
+
+  .bg-gray-100 {
+    background-color: rgb(var(--ui-gray-100));
+  }
+
+  .bg-gray-200 {
+    background-color: rgb(var(--ui-gray-200));
+  }
+
+  .border-gray-200 {
+    border-color: rgb(var(--ui-gray-200));
+  }
+
+  .border-gray-300 {
+    border-color: rgb(var(--ui-gray-300));
+  }
+
+  .hover\:bg-gray-50:hover {
+    background-color: rgb(var(--ui-gray-50));
+  }
+}
+
+/* Keep semantic utility classes theme-aware at runtime. */
+.text-muted {
+  color: rgb(var(--color-muted));
+}
+
+.text-primary {
+  color: rgb(var(--color-primary));
+}
+
+.text-primary-dark {
+  color: rgb(var(--color-primary-dark));
+}
+
+.bg-surface {
+  background-color: rgb(var(--color-surface));
+}
+
+.bg-background {
+  background-color: rgb(var(--color-background));
+}
+
+.bg-primary {
+  background-color: rgb(var(--color-primary));
+}
+
+.bg-primary-light\/40 {
+  background-color: rgb(var(--color-primary-light) / 0.4);
+}
+
+.border-primary {
+  border-color: rgb(var(--color-primary));
+}
+
+.border-primary-light {
+  border-color: rgb(var(--color-primary-light));
+}
+
+.hover\:text-primary:hover {
+  color: rgb(var(--color-primary));
+}
+
+.hover\:text-primary-dark:hover {
+  color: rgb(var(--color-primary-dark));
+}
+
+.hover\:bg-primary-dark:hover {
+  background-color: rgb(var(--color-primary-dark));
 }
 
 @keyframes toast-in {
