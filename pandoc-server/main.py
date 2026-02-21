@@ -17,6 +17,7 @@ from fastapi import FastAPI, Response, Request
 
 app = FastAPI()
 
+@app.post("/")
 @app.post("/convert")
 async def convert(request: Request):
     data = await request.json()
