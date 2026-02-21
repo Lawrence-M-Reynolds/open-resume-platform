@@ -2,6 +2,7 @@ package com.reynolds.open_resume_platform.restcontrollers;
 
 import com.reynolds.open_resume_platform.resumes.command.CreateResumeCommand;
 import com.reynolds.open_resume_platform.resumes.command.CreateResumeVersionCommand;
+import com.reynolds.open_resume_platform.resumes.command.GenerateDocxRequest;
 import com.reynolds.open_resume_platform.resumes.command.UpdateResumeCommand;
 import com.reynolds.open_resume_platform.resumes.domain.Resume;
 import com.reynolds.open_resume_platform.resumes.domain.ResumeVersion;
@@ -113,14 +114,15 @@ public class ResumeController {
         return ResponseEntity.ok(resumeVersionService.listByResumeId(id));
     }
 
-    @Operation(summary = "Generate DOCX", description = "Generates a DOCX file for the resume. Returns the file for download or 404.")
+    @Operation(summary = "Generate DOCX", description = "Generates a DOCX file. Optional body with versionId: when set, uses that version's markdown and templateId; otherwise uses the current resume.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "DOCX file", content = @Content(mediaType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document")),
-            @ApiResponse(responseCode = "404", description = "Resume not found")
+            @ApiResponse(responseCode = "404", description = "Resume or version not found")
     })
     @PostMapping("/{id}/generate")
-    public ResponseEntity<byte[]> generateDocx(@PathVariable String id) {
-        return resumeDocxService.generate(id)
+    public ResponseEntity<byte[]> generateDocx(@PathVariable String id, @RequestBody(required = false) GenerateDocxRequest request) {
+        String versionId = request != null && request.versionId() != null && !request.versionId().isBlank() ? request.versionId() : null;
+        return resumeDocxService.generate(id, versionId)
                 .map(bytes -> ResponseEntity.ok()
                         .contentType(MediaType.parseMediaType(DOCX_CONTENT_TYPE))
                         .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"resume.docx\"")
