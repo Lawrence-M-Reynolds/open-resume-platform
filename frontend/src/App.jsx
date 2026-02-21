@@ -1,13 +1,6 @@
 import { Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout.jsx';
-
-function Dashboard() {
-  return (
-    <div>
-      <h1>Dashboard</h1>
-    </div>
-  );
-}
+import Dashboard from './pages/Dashboard.jsx';
 
 export default function App() {
   return (
