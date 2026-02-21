@@ -1,6 +1,7 @@
 package com.reynolds.open_resume_platform.resumes.service;
 
 import com.reynolds.open_resume_platform.resumes.command.CreateResumeCommand;
+import com.reynolds.open_resume_platform.resumes.command.UpdateResumeCommand;
 import com.reynolds.open_resume_platform.resumes.domain.Resume;
 import com.reynolds.open_resume_platform.resumes.repository.InMemoryResumeRepository;
 import com.reynolds.open_resume_platform.resumes.repository.ResumeRepository;
@@ -127,5 +128,86 @@ class ResumeServiceTest {
         List<Resume> list = service.list();
 
         assertEquals(2, list.size());
+    }
+
+    @Test
+    void update_updatesResumeWhenExists() {
+        Resume created = service.create(new CreateResumeCommand(
+                "Original", null, null, "t1", "# Original content"
+        ));
+        UpdateResumeCommand update = new UpdateResumeCommand(
+                "Updated Title",
+                "Lead",
+                "NewCo",
+                "t2",
+                "# Updated content"
+        );
+
+        Optional<Resume> result = service.update(created.id(), update);
+
+        assertTrue(result.isPresent());
+        assertEquals(created.id(), result.get().id());
+        assertEquals("Updated Title", result.get().title());
+        assertEquals("Lead", result.get().targetRole());
+        assertEquals("NewCo", result.get().targetCompany());
+        assertEquals("t2", result.get().templateId());
+        assertEquals("# Updated content", result.get().markdown());
+        assertEquals(created.createdAt(), result.get().createdAt());
+        assertNotNull(result.get().updatedAt());
+    }
+
+    @Test
+    void update_returnsEmptyWhenNotFound() {
+        UpdateResumeCommand update = new UpdateResumeCommand(
+                "Title", null, null, "t1", "# Content"
+        );
+
+        Optional<Resume> result = service.update("non-existent-id", update);
+
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void update_rejectsTitleShorterThan3Chars() {
+        Resume created = service.create(new CreateResumeCommand(
+                "Ok Title", null, null, "t1", "# Content"
+        ));
+        UpdateResumeCommand update = new UpdateResumeCommand(
+                "ab", null, null, "t1", "# Content"
+        );
+
+        assertThrows(IllegalArgumentException.class, () -> service.update(created.id(), update));
+    }
+
+    @Test
+    void update_rejectsBlankMarkdown() {
+        Resume created = service.create(new CreateResumeCommand(
+                "Ok Title", null, null, "t1", "# Content"
+        ));
+        UpdateResumeCommand update = new UpdateResumeCommand(
+                "Ok Title", null, null, "t1", "   "
+        );
+
+        assertThrows(IllegalArgumentException.class, () -> service.update(created.id(), update));
+    }
+
+    @Test
+    void update_trimsTitleAndMarkdown() {
+        Resume created = service.create(new CreateResumeCommand(
+                "Original", null, null, "t1", "# Content"
+        ));
+        UpdateResumeCommand update = new UpdateResumeCommand(
+                "  New Title  ",
+                null,
+                null,
+                "t1",
+                "  \n# New\n\nBody  \n  "
+        );
+
+        Optional<Resume> result = service.update(created.id(), update);
+
+        assertTrue(result.isPresent());
+        assertEquals("New Title", result.get().title());
+        assertEquals("# New\n\nBody", result.get().markdown());
     }
 }

@@ -1,6 +1,7 @@
 package com.reynolds.open_resume_platform.resumes.service;
 
 import com.reynolds.open_resume_platform.resumes.command.CreateResumeCommand;
+import com.reynolds.open_resume_platform.resumes.command.UpdateResumeCommand;
 import com.reynolds.open_resume_platform.resumes.domain.Resume;
 import com.reynolds.open_resume_platform.resumes.repository.ResumeRepository;
 import org.springframework.stereotype.Service;
@@ -57,5 +58,10 @@ public class ResumeServiceImpl implements ResumeService {
     @Override
     public List<Resume> list() {
         return repository.findAll();
+    }
+
+    @Override
+    public Optional<Resume> update(String id, UpdateResumeCommand command) {
+        throw new UnsupportedOperationException("Not implemented");
     }
 }
