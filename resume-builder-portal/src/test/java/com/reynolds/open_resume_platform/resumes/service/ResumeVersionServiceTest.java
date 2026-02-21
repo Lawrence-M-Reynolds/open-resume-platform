@@ -6,8 +6,10 @@ import com.reynolds.open_resume_platform.resumes.domain.Resume;
 import com.reynolds.open_resume_platform.resumes.domain.ResumeVersion;
 import com.reynolds.open_resume_platform.resumes.repository.InMemoryResumeRepository;
 import com.reynolds.open_resume_platform.resumes.repository.InMemoryResumeVersionRepository;
+import com.reynolds.open_resume_platform.resumes.repository.InMemorySectionRepository;
 import com.reynolds.open_resume_platform.resumes.repository.ResumeRepository;
 import com.reynolds.open_resume_platform.resumes.repository.ResumeVersionRepository;
+import com.reynolds.open_resume_platform.resumes.repository.SectionRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -27,8 +29,10 @@ class ResumeVersionServiceTest {
     void setUp() {
         ResumeRepository resumeRepository = new InMemoryResumeRepository();
         ResumeVersionRepository versionRepository = new InMemoryResumeVersionRepository();
+        SectionRepository sectionRepository = new InMemorySectionRepository();
+        ResumeMarkdownAssembler markdownAssembler = new ResumeMarkdownAssembler(resumeRepository, sectionRepository);
         resumeService = new ResumeServiceImpl(resumeRepository);
-        versionService = new ResumeVersionService(resumeRepository, versionRepository);
+        versionService = new ResumeVersionService(resumeRepository, versionRepository, markdownAssembler);
     }
 
     @Test
