@@ -2,11 +2,11 @@ import { Link } from 'react-router-dom';
 
 const variants = {
   primary:
-    'px-4 py-2 bg-primary text-white rounded font-medium hover:bg-primary-dark transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed',
+    'inline-flex items-center justify-center min-h-[44px] px-4 py-3 sm:py-2 bg-primary text-white rounded font-medium hover:bg-primary-dark transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed',
   secondary:
-    'px-4 py-2 border border-gray-300 rounded font-medium text-gray-700 hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed',
+    'inline-flex items-center justify-center min-h-[44px] px-4 py-3 sm:py-2 border border-gray-300 rounded font-medium text-gray-700 hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed',
   danger:
-    'px-4 py-2 bg-error text-white rounded font-medium hover:opacity-90',
+    'inline-flex items-center justify-center min-h-[44px] px-4 py-3 sm:py-2 bg-error text-white rounded font-medium hover:opacity-90',
 };
 
 /**

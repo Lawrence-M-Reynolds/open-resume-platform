@@ -122,7 +122,7 @@ export default function ResumeDetail() {
         </div>
         <div>
           <span className="text-sm font-medium text-gray-500">Content (Markdown)</span>
-          <pre className="mt-2 p-4 bg-gray-50 rounded border border-gray-200 text-gray-900 text-sm font-mono whitespace-pre-wrap break-words">
+          <pre className="mt-2 p-4 bg-gray-50 rounded border border-gray-200 text-gray-900 text-sm font-mono whitespace-pre-wrap break-words overflow-x-auto min-w-0">
             {resume.markdown || '—'}
           </pre>
         </div>

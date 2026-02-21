@@ -11,16 +11,20 @@ const linkClass = 'text-muted hover:text-primary transition-colors duration-200 
  */
 export default function PageHeader({ backTo, backLabel, title = null, actions }) {
   return (
-    <div className="mb-6 flex items-center justify-between gap-4 flex-wrap">
-      <div className="flex items-center gap-4">
-        <Link to={backTo} className={linkClass}>
+    <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+      <div className="flex flex-wrap items-center gap-2 sm:gap-4 min-w-0">
+        <Link to={backTo} className={`${linkClass} min-h-[44px] flex items-center shrink-0`}>
           {backLabel}
         </Link>
         {title != null && title !== '' && (
-          <h1 className="text-2xl font-semibold text-gray-800">{title}</h1>
+          <h1 className="text-xl sm:text-2xl font-semibold text-gray-800 break-words min-w-0">
+            {title}
+          </h1>
         )}
       </div>
-      {actions != null && <div className="flex gap-2">{actions}</div>}
+      {actions != null && (
+        <div className="flex flex-wrap gap-2 shrink-0">{actions}</div>
+      )}
     </div>
   );
 }

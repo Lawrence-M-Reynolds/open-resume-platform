@@ -153,15 +153,16 @@ export default function ResumeForm({
         )}
       </div>
 
-      <div className="flex gap-3 pt-2">
+      <div className="flex flex-wrap gap-3 pt-2">
         <Button
           type="submit"
           variant="primary"
           disabled={!valid || loading}
+          className="w-full sm:w-auto"
         >
           {loading ? submitLoadingLabel : submitLabel}
         </Button>
-        <Button to={cancelTo} variant="secondary">
+        <Button to={cancelTo} variant="secondary" className="w-full sm:w-auto">
           {cancelLabel}
         </Button>
       </div>
