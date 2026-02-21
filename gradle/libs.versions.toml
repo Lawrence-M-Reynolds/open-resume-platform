@@ -4,7 +4,7 @@
 [versions]
 guava = "33.4.6-jre"
 junit-jupiter = "5.12.1"
-springdoc = "2.3.0"
+springdoc = "2.8.6"
 
 [libraries]
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
