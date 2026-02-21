@@ -9,9 +9,12 @@ import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
 
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ResumeServiceTest {
 
@@ -87,5 +90,25 @@ class ResumeServiceTest {
 
         assertEquals("Trimmed Title", resume.title());
         assertEquals("# Section\n\nContent", resume.markdown());
+    }
+
+    @Test
+    void getById_returnsResumeWhenExists() {
+        Resume created = service.create(new CreateResumeCommand(
+                "My Resume", null, null, "t1", "# Content"
+        ));
+
+        Optional<Resume> found = service.getById(created.id());
+
+        assertTrue(found.isPresent());
+        assertEquals(created.id(), found.get().id());
+        assertEquals("My Resume", found.get().title());
+    }
+
+    @Test
+    void getById_returnsEmptyWhenNotFound() {
+        Optional<Resume> found = service.getById("non-existent-id");
+
+        assertTrue(found.isEmpty());
     }
 }
