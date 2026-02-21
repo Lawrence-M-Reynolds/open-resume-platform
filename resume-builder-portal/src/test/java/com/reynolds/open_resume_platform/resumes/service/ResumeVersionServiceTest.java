@@ -3,6 +3,7 @@ package com.reynolds.open_resume_platform.resumes.service;
 import com.reynolds.open_resume_platform.resumes.command.CreateResumeCommand;
 import com.reynolds.open_resume_platform.resumes.command.CreateResumeVersionCommand;
 import com.reynolds.open_resume_platform.resumes.domain.Resume;
+import com.reynolds.open_resume_platform.resumes.domain.ResumeSection;
 import com.reynolds.open_resume_platform.resumes.domain.ResumeVersion;
 import com.reynolds.open_resume_platform.resumes.repository.InMemoryResumeRepository;
 import com.reynolds.open_resume_platform.resumes.repository.InMemoryResumeVersionRepository;
@@ -13,8 +14,10 @@ import com.reynolds.open_resume_platform.resumes.repository.SectionRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -24,12 +27,13 @@ class ResumeVersionServiceTest {
 
     private ResumeVersionService versionService;
     private ResumeService resumeService;
+    private SectionRepository sectionRepository;
 
     @BeforeEach
     void setUp() {
         ResumeRepository resumeRepository = new InMemoryResumeRepository();
         ResumeVersionRepository versionRepository = new InMemoryResumeVersionRepository();
-        SectionRepository sectionRepository = new InMemorySectionRepository();
+        sectionRepository = new InMemorySectionRepository();
         ResumeMarkdownAssembler markdownAssembler = new ResumeMarkdownAssembler(resumeRepository, sectionRepository);
         resumeService = new ResumeServiceImpl(resumeRepository);
         versionService = new ResumeVersionService(resumeRepository, versionRepository, markdownAssembler);
