@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getResume, updateResume } from '../api/resumes.js';
 import ErrorBanner from '../components/ErrorBanner.jsx';
+import PageHeader from '../components/PageHeader.jsx';
 
 const MIN_TITLE_LENGTH = 3;
 
@@ -70,14 +71,7 @@ export default function EditResume() {
   if (loadingResume) {
     return (
       <div>
-        <div className="mb-6">
-          <Link
-            to="/"
-            className="text-muted hover:text-primary transition-colors duration-200 text-sm font-medium"
-          >
-            ← Resumes
-          </Link>
-        </div>
+        <PageHeader backTo="/" backLabel="← Resumes" />
         <p className="text-muted">Loading…</p>
       </div>
     );
@@ -86,14 +80,7 @@ export default function EditResume() {
   if (error && !title) {
     return (
       <div>
-        <div className="mb-6">
-          <Link
-            to="/"
-            className="text-muted hover:text-primary transition-colors duration-200 text-sm font-medium"
-          >
-            ← Resumes
-          </Link>
-        </div>
+        <PageHeader backTo="/" backLabel="← Resumes" />
         <ErrorBanner
           message={error}
           action={
@@ -111,15 +98,11 @@ export default function EditResume() {
 
   return (
     <div>
-      <div className="mb-6 flex items-center gap-4">
-        <Link
-          to={`/resumes/${id}`}
-          className="text-muted hover:text-primary transition-colors duration-200 text-sm font-medium"
-        >
-          ← Back to resume
-        </Link>
-        <h1 className="text-2xl font-semibold text-gray-800">Edit resume</h1>
-      </div>
+      <PageHeader
+        backTo={`/resumes/${id}`}
+        backLabel="← Back to resume"
+        title="Edit resume"
+      />
 
       <form
         onSubmit={handleSubmit}
