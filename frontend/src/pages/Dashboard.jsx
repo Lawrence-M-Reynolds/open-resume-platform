@@ -32,7 +32,7 @@ export default function Dashboard() {
   if (loading) {
     return (
       <div>
-        <h1 className="text-2xl font-semibold text-gray-800 mb-6">
+        <h1 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-6">
           Resumes
         </h1>
         <LoadingSkeleton />
@@ -43,7 +43,7 @@ export default function Dashboard() {
   if (error) {
     return (
       <div>
-        <h1 className="text-2xl font-semibold text-gray-800 mb-6">
+        <h1 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-6">
           Resumes
         </h1>
         <ErrorBanner
@@ -56,8 +56,8 @@ export default function Dashboard() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold text-gray-800">Resumes</h1>
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-6">
+        <h1 className="text-xl sm:text-2xl font-semibold text-gray-800">Resumes</h1>
         <Button to="/resumes/new" variant="primary">
           Create resume
         </Button>

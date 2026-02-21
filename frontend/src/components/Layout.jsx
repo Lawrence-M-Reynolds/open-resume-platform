@@ -4,17 +4,17 @@ export default function Layout() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <header className="bg-surface border-b border-gray-200 shadow-sm">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="max-w-4xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-2">
           <Link
             to="/"
-            className="text-xl font-semibold text-primary hover:text-primary-dark transition-colors duration-200"
+            className="text-lg sm:text-xl font-semibold text-primary hover:text-primary-dark transition-colors duration-200 shrink-0"
           >
             Open Resume
           </Link>
           <nav>
             <Link
               to="/"
-              className="text-muted hover:text-primary transition-colors duration-200 font-medium"
+              className="inline-block py-2 px-3 text-muted hover:text-primary transition-colors duration-200 font-medium min-h-[44px] flex items-center"
             >
               Resumes
             </Link>
