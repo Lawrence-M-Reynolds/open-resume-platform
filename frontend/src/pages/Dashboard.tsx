@@ -1,39 +1,18 @@
-import { useEffect, useState } from "react";
-
 import Button from "../components/Button";
 import Card from "../components/Card";
 import ErrorBanner from "../components/ErrorBanner";
 import { Link } from "react-router-dom";
 import LoadingSkeleton from "../components/LoadingSkeleton";
+import { useResumesData } from "../hooks/useResumesData";
 import { APP_PATHS, resumeDetailPath } from "../routes/paths";
-import type { Resume } from "../types/api";
 import { formatDate } from "../utils/date";
 import { getErrorMessage } from "../utils/error";
-import { listResumes } from "../api/resumes";
 
 export default function Dashboard() {
-  const [resumes, setResumes] = useState<Resume[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const resumesQuery = useResumesData();
+  const resumes = resumesQuery.data ?? [];
 
-  const load = async (): Promise<void> => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await listResumes();
-      setResumes(data);
-    } catch (errorValue) {
-      setError(getErrorMessage(errorValue));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    void load();
-  }, []);
-
-  if (loading) {
+  if (resumesQuery.isPending) {
     return (
       <div>
         <h1 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-6">
@@ -44,16 +23,21 @@ export default function Dashboard() {
     );
   }
 
-  if (error) {
+  if (resumesQuery.isError) {
     return (
       <div>
         <h1 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-6">
           Resumes
         </h1>
         <ErrorBanner
-          message={error}
+          message={getErrorMessage(resumesQuery.error)}
           action={
-            <Button variant="danger" onClick={load}>
+            <Button
+              variant="danger"
+              onClick={() => {
+                void resumesQuery.refetch();
+              }}
+            >
               Retry
             </Button>
           }

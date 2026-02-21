@@ -2,7 +2,7 @@ import type { ResumeFormValues, ResumePayload } from "../types/api";
 
 import PageHeader from "../components/PageHeader";
 import ResumeForm from "../components/ResumeForm";
-import { createResume } from "../api/resumes";
+import { useCreateResumeMutation } from "../hooks/useResumeMutations";
 import { getErrorMessage } from "../utils/error";
 import { APP_PATHS, resumeDetailPath } from "../routes/paths";
 import { useNavigate } from "react-router-dom";
@@ -18,19 +18,16 @@ const EMPTY_VALUES: ResumeFormValues = {
 
 export default function NewResume() {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
+  const createResumeMutation = useCreateResumeMutation();
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (values: ResumePayload): Promise<void> => {
-    setLoading(true);
     setError(null);
     try {
-      const resume = await createResume(values);
+      const resume = await createResumeMutation.mutateAsync(values);
       navigate(resumeDetailPath(resume.id));
     } catch (errorValue) {
       setError(getErrorMessage(errorValue));
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -45,7 +42,7 @@ export default function NewResume() {
         cancelTo={APP_PATHS.home}
         cancelLabel="Cancel"
         error={error}
-        loading={loading}
+        loading={createResumeMutation.isPending}
       />
     </>
   );
