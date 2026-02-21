@@ -63,7 +63,7 @@ export default function Dashboard() {
         {resumes.map((r) => (
           <div
             key={r.id}
-            className="bg-surface rounded-lg border border-gray-200 p-5"
+            className="bg-surface rounded-lg border border-gray-200 shadow-sm p-5 transition-all duration-200 ease-out hover:shadow-md hover:-translate-y-0.5 hover:border-primary-light"
           >
             <div className="font-semibold text-gray-900">{r.title}</div>
             <div className="text-muted text-sm mt-1">
