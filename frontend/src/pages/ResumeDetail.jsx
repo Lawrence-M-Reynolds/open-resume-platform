@@ -2,16 +2,9 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getResume, generateDocx } from '../api/resumes.js';
 import { formatDate } from '../utils/date.js';
+import { downloadBlob } from '../utils/download.js';
+import { slugify } from '../utils/slug.js';
 import LoadingSkeleton from '../components/LoadingSkeleton.jsx';
-
-function downloadBlob(blob, filename) {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
-}
 
 export default function ResumeDetail() {
   const { id } = useParams();
@@ -43,8 +36,7 @@ export default function ResumeDetail() {
     setDownloadError(null);
     try {
       const blob = await generateDocx(id);
-      const slug = resume.title.replace(/[^a-zA-Z0-9-_ ]/g, '').replace(/\s+/g, '-') || 'resume';
-      downloadBlob(blob, `${slug}.docx`);
+      downloadBlob(blob, `${slugify(resume.title)}.docx`);
     } catch (e) {
       setDownloadError(e.message);
     } finally {
