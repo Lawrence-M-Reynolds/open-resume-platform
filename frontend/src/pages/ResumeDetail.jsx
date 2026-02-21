@@ -69,14 +69,22 @@ export default function ResumeDetail() {
 
   return (
     <div>
-      <div className="mb-6 flex items-center gap-4">
+      <div className="mb-6 flex items-center justify-between gap-4 flex-wrap">
+        <div className="flex items-center gap-4">
+          <Link
+            to="/"
+            className="text-muted hover:text-primary transition-colors duration-200 text-sm font-medium"
+          >
+            ← Resumes
+          </Link>
+          <h1 className="text-2xl font-semibold text-gray-800">{resume.title}</h1>
+        </div>
         <Link
-          to="/"
-          className="text-muted hover:text-primary transition-colors duration-200 text-sm font-medium"
+          to={`/resumes/${resume.id}/edit`}
+          className="px-4 py-2 bg-primary text-white rounded font-medium hover:bg-primary-dark transition-colors duration-200"
         >
-          ← Resumes
+          Edit
         </Link>
-        <h1 className="text-2xl font-semibold text-gray-800">{resume.title}</h1>
       </div>
 
       <div className="bg-surface rounded-lg border border-gray-200 shadow-sm p-6 space-y-4 max-w-3xl">
