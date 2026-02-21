@@ -7,6 +7,7 @@ import com.reynolds.open_resume_platform.portal.dto.FileType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 
 import java.lang.invoke.MethodHandles;
 
@@ -22,10 +23,14 @@ public class DocumentGeneratorGatewayService {
         this.documentGeneratorGatewayClient = documentGeneratorGatewayClient;
     }
 
-    public byte[] createCv(String markdown) {
-
-        CvGenerationRequest cvGenerationRequest = new CvGenerationRequest(MockData.defaultTemplateId, FileType.DOCX, markdown);
-
-        return documentGeneratorGatewayClient.generate(cvGenerationRequest);
+    public byte[] createCv(String templateId, String markdown) {
+        String effectiveTemplateId = (templateId != null && !templateId.isBlank()) ? templateId : MockData.defaultTemplateId;
+        CvGenerationRequest cvGenerationRequest = new CvGenerationRequest(effectiveTemplateId, FileType.DOCX, markdown);
+        try {
+            return documentGeneratorGatewayClient.generate(cvGenerationRequest);
+        } catch (RestClientException e) {
+            logger.warn("Document generation gateway failed", e);
+            throw new DocumentGenerationUnavailableException("Document generation service is temporarily unavailable");
+        }
     }
 }
