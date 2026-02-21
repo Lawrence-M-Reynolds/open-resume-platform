@@ -56,6 +56,6 @@ public class ResumeServiceImpl implements ResumeService {
 
     @Override
     public List<Resume> list() {
-        throw new UnsupportedOperationException("Not implemented");
+        return repository.findAll();
     }
 }

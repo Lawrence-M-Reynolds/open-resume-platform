@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/resumes")
 public class ResumeController {
@@ -25,6 +27,11 @@ public class ResumeController {
     public ResponseEntity<Resume> create(@RequestBody CreateResumeCommand command) {
         Resume resume = resumeService.create(command);
         return ResponseEntity.status(201).body(resume);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<Resume>> list() {
+        return ResponseEntity.ok(resumeService.list());
     }
 
     @GetMapping("/{id}")
