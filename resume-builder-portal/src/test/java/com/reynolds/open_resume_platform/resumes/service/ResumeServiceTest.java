@@ -8,7 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
-
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -110,5 +110,22 @@ class ResumeServiceTest {
         Optional<Resume> found = service.getById("non-existent-id");
 
         assertTrue(found.isEmpty());
+    }
+
+    @Test
+    void list_returnsEmptyWhenNone() {
+        List<Resume> list = service.list();
+
+        assertTrue(list.isEmpty());
+    }
+
+    @Test
+    void list_returnsAllCreatedResumes() {
+        service.create(new CreateResumeCommand("First", null, null, "t1", "# One"));
+        service.create(new CreateResumeCommand("Second", null, null, "t1", "# Two"));
+
+        List<Resume> list = service.list();
+
+        assertEquals(2, list.size());
     }
 }
