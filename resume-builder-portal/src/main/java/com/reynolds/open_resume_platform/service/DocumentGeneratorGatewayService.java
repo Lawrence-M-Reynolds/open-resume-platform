@@ -23,8 +23,9 @@ public class DocumentGeneratorGatewayService {
         this.documentGeneratorGatewayClient = documentGeneratorGatewayClient;
     }
 
-    public byte[] createCv(String markdown) {
-        CvGenerationRequest cvGenerationRequest = new CvGenerationRequest(MockData.defaultTemplateId, FileType.DOCX, markdown);
+    public byte[] createCv(String templateId, String markdown) {
+        String effectiveTemplateId = (templateId != null && !templateId.isBlank()) ? templateId : MockData.defaultTemplateId;
+        CvGenerationRequest cvGenerationRequest = new CvGenerationRequest(effectiveTemplateId, FileType.DOCX, markdown);
         try {
             return documentGeneratorGatewayClient.generate(cvGenerationRequest);
         } catch (RestClientException e) {

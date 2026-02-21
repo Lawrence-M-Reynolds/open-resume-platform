@@ -20,6 +20,6 @@ public class ResumeDocxServiceImpl implements ResumeDocxService {
     @Override
     public Optional<byte[]> generate(String resumeId) {
         return resumeService.getById(resumeId)
-                .map(resume -> documentGeneratorGatewayService.createCv(resume.markdown()));
+                .map(resume -> documentGeneratorGatewayService.createCv(resume.templateId(), resume.markdown()));
     }
 }

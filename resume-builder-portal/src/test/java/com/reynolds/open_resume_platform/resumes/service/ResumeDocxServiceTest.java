@@ -27,7 +27,7 @@ class ResumeDocxServiceTest {
         ResumeRepository repository = new InMemoryResumeRepository();
         resumeService = new ResumeServiceImpl(repository);
         documentGeneratorGatewayService = mock(DocumentGeneratorGatewayService.class);
-        when(documentGeneratorGatewayService.createCv(anyString())).thenReturn(new byte[]{1, 2, 3});
+        when(documentGeneratorGatewayService.createCv(anyString(), anyString())).thenReturn(new byte[]{1, 2, 3});
         docxService = new ResumeDocxServiceImpl(resumeService, documentGeneratorGatewayService);
     }
 
