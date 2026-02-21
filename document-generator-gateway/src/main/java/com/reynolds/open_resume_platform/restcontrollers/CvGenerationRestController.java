@@ -33,7 +33,10 @@ public class CvGenerationRestController {
 
 		logger.debug("CvGenerationRestController called: {}", cvGenerationRequest);
 
-		String base64TemplateVal = getBase64TemplateVal(cvGenerationRequest.templateId());
+		String effectiveTemplateId = (cvGenerationRequest.templateId() != null && !cvGenerationRequest.templateId().isBlank())
+				? cvGenerationRequest.templateId()
+				: "default-template";
+		String base64TemplateVal = getBase64TemplateVal(effectiveTemplateId);
 		FileType fileType = cvGenerationRequest.fileType();
 
 		byte[] body = documentGeneratorService.callService(

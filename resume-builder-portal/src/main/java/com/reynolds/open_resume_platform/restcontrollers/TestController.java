@@ -30,7 +30,7 @@ public class TestController {
 
 		logger.debug("TestController called");
 
-		byte[] cvData = documentGeneratorGatewayService.createCv(MockData.getCvMarkdown());
+		byte[] cvData = documentGeneratorGatewayService.createCv(null, MockData.getCvMarkdown());
 
 		// TODO - fix file name
 		return ResponseEntity.ok()
