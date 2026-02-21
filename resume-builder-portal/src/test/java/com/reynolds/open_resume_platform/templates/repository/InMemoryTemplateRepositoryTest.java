@@ -13,12 +13,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class InMemoryTemplateRepositoryTest {
 
     @Test
-    void findAll_returnsThreeDemoTemplates() {
+    void findAll_returnsDefaultAndDemoTemplates() {
         InMemoryTemplateRepository repo = new InMemoryTemplateRepository();
 
         List<Template> all = repo.findAll();
 
-        assertEquals(3, all.size());
+        assertEquals(4, all.size());
+        assertTrue(all.stream().anyMatch(t -> "default-template".equals(t.id())));
         assertTrue(all.stream().anyMatch(t -> "banking-conservative".equals(t.id())));
         assertTrue(all.stream().anyMatch(t -> "startup-modern".equals(t.id())));
         assertTrue(all.stream().anyMatch(t -> "public-sector-structured".equals(t.id())));
@@ -53,6 +54,6 @@ class InMemoryTemplateRepositoryTest {
 
         assertEquals(newTemplate, saved);
         assertTrue(repo.findById("custom-id").isPresent());
-        assertEquals(4, repo.findAll().size());
+        assertEquals(5, repo.findAll().size());
     }
 }

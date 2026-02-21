@@ -25,10 +25,10 @@ class TemplateServiceTest {
     }
 
     @Test
-    void list_returnsDemoTemplates() {
+    void list_returnsDefaultAndDemoTemplates() {
         List<Template> list = templateService.list();
 
-        assertEquals(3, list.size());
+        assertEquals(4, list.size());
     }
 
     @Test
@@ -52,7 +52,7 @@ class TemplateServiceTest {
         assertNotNull(created.id());
         assertEquals("My Template", created.name());
         assertEquals("Optional description", created.description());
-        assertEquals(4, templateService.list().size());
+        assertEquals(5, templateService.list().size());
         assertTrue(templateService.getById(created.id()).isPresent());
     }
 
