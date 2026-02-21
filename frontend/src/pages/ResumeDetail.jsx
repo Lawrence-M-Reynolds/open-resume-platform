@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { getResume, generateDocx, listVersions, createVersion } from '../api/resumes.js';
+import { getResume, generateDocx, listVersions, createVersion, listDocuments, fetchDocumentBlob } from '../api/resumes.js';
 import { listTemplates } from '../api/templates.js';
 import { formatDate } from '../utils/date.js';
 import { downloadBlob } from '../utils/download.js';
@@ -28,6 +28,9 @@ export default function ResumeDetail() {
   const [templates, setTemplates] = useState([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState('');
   const [loadingTemplates, setLoadingTemplates] = useState(false);
+  const [documents, setDocuments] = useState([]);
+  const [loadingDocuments, setLoadingDocuments] = useState(false);
+  const [downloadingDocumentId, setDownloadingDocumentId] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -57,6 +60,19 @@ export default function ResumeDetail() {
   useEffect(() => {
     if (!resume) return;
     loadVersions();
+  }, [resume?.id]);
+
+  const loadDocuments = () => {
+    setLoadingDocuments(true);
+    listDocuments(id)
+      .then((data) => setDocuments(data))
+      .catch(() => setDocuments([]))
+      .finally(() => setLoadingDocuments(false));
+  };
+
+  useEffect(() => {
+    if (!resume) return;
+    loadDocuments();
   }, [resume?.id]);
 
   useEffect(() => {
@@ -96,6 +112,7 @@ export default function ResumeDetail() {
     try {
       const blob = await generateDocx(id, buildGenerateOptions());
       downloadBlob(blob, `${slugify(resume.title)}.docx`);
+      loadDocuments();
     } catch (e) {
       setDownloadError(e.message);
     } finally {
@@ -111,10 +128,26 @@ export default function ResumeDetail() {
       const baseName = slugify(resume.title);
       const fileName = `${baseName}-v${version.versionNo}.docx`;
       downloadBlob(blob, fileName);
+      loadDocuments();
     } catch (e) {
       setDownloadError(e.message);
     } finally {
       setDownloadingVersionId(null);
+    }
+  };
+
+  const handleDownloadDocument = async (doc) => {
+    setDownloadingDocumentId(doc.id);
+    setDownloadError(null);
+    try {
+      const blob = await fetchDocumentBlob(doc.downloadUrl);
+      const baseName = slugify(resume.title);
+      const fileName = `${baseName}-${doc.id.slice(0, 8)}.docx`;
+      downloadBlob(blob, fileName);
+    } catch (e) {
+      setDownloadError(e.message);
+    } finally {
+      setDownloadingDocumentId(null);
     }
   };
 
@@ -247,6 +280,33 @@ export default function ResumeDetail() {
                     disabled={downloadingVersionId != null}
                   >
                     {downloadingVersionId === v.id ? 'Downloading…' : 'Generate DOCX'}
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+      </div>
+
+      <div className="mt-8 max-w-3xl">
+        <h2 className="text-lg font-semibold text-gray-800 mb-3">Generated files</h2>
+        <Card className="p-6">
+          {loadingDocuments ? (
+            <p className="text-muted text-sm">Loading…</p>
+          ) : documents.length === 0 ? (
+            <p className="text-muted text-sm">No generated files yet. Use &quot;Download DOCX&quot; or &quot;Generate DOCX&quot; on a variant to create one.</p>
+          ) : (
+            <ul className="space-y-3">
+              {documents.map((doc) => (
+                <li key={doc.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+                  <span className="text-muted">{formatDate(doc.generatedAt)}</span>
+                  <span className="text-gray-600">{doc.versionId ? `Version snapshot` : `Current resume`}</span>
+                  <Button
+                    variant="secondary"
+                    onClick={() => handleDownloadDocument(doc)}
+                    disabled={downloadingDocumentId != null}
+                  >
+                    {downloadingDocumentId === doc.id ? 'Downloading…' : 'Download'}
                   </Button>
                 </li>
               ))}
