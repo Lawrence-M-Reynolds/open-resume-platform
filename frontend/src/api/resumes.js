@@ -54,11 +54,14 @@ export async function updateResume(id, body) {
 }
 
 export async function generateDocx(id, options = {}) {
-  const { versionId } = options;
-  const body = versionId != null && versionId !== '' ? { versionId } : undefined;
+  const { versionId, templateId } = options;
+  const body = {};
+  if (versionId != null && versionId !== '') body.versionId = versionId;
+  if (templateId != null && templateId !== '') body.templateId = templateId;
+  const hasBody = Object.keys(body).length > 0;
   const response = await fetch(`${BASE}/${id}/generate`, {
     method: 'POST',
-    ...(body != null && { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }),
+    ...(hasBody && { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }),
   });
   return handleResponse(response, { expectJson: false });
 }
