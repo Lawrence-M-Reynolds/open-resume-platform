@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { getResume, generateDocx, listVersions, createVersion } from '../api/resumes.js';
+import { listTemplates } from '../api/templates.js';
 import { formatDate } from '../utils/date.js';
 import { downloadBlob } from '../utils/download.js';
 import { slugify } from '../utils/slug.js';
@@ -24,6 +25,9 @@ export default function ResumeDetail() {
   const [creatingVariant, setCreatingVariant] = useState(false);
   const [variantError, setVariantError] = useState(null);
   const [downloadingVersionId, setDownloadingVersionId] = useState(null);
+  const [templates, setTemplates] = useState([]);
+  const [selectedTemplateId, setSelectedTemplateId] = useState('');
+  const [loadingTemplates, setLoadingTemplates] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -55,6 +59,14 @@ export default function ResumeDetail() {
     loadVersions();
   }, [resume?.id]);
 
+  useEffect(() => {
+    setLoadingTemplates(true);
+    listTemplates()
+      .then((data) => setTemplates(data))
+      .catch(() => setTemplates([]))
+      .finally(() => setLoadingTemplates(false));
+  }, []);
+
   const handleCreateVariant = async (e) => {
     e.preventDefault();
     setCreatingVariant(true);
@@ -71,11 +83,18 @@ export default function ResumeDetail() {
     }
   };
 
+  const buildGenerateOptions = (versionId) => {
+    const opts = {};
+    if (versionId != null && versionId !== '') opts.versionId = versionId;
+    if (selectedTemplateId != null && selectedTemplateId !== '') opts.templateId = selectedTemplateId;
+    return opts;
+  };
+
   const handleDownload = async () => {
     setDownloading(true);
     setDownloadError(null);
     try {
-      const blob = await generateDocx(id);
+      const blob = await generateDocx(id, buildGenerateOptions());
       downloadBlob(blob, `${slugify(resume.title)}.docx`);
     } catch (e) {
       setDownloadError(e.message);
@@ -88,7 +107,7 @@ export default function ResumeDetail() {
     setDownloadingVersionId(version.id);
     setDownloadError(null);
     try {
-      const blob = await generateDocx(id, { versionId: version.id });
+      const blob = await generateDocx(id, buildGenerateOptions(version.id));
       const baseName = slugify(resume.title);
       const fileName = `${baseName}-v${version.versionNo}.docx`;
       downloadBlob(blob, fileName);
@@ -159,6 +178,24 @@ export default function ResumeDetail() {
           <ErrorBanner message={downloadError} compact />
         </div>
       )}
+
+      <div className="mb-4 max-w-3xl">
+        <label htmlFor="template-select" className="block text-sm font-medium text-gray-700 mb-1">
+          Template for DOCX generation
+        </label>
+        <select
+          id="template-select"
+          value={selectedTemplateId}
+          onChange={(e) => setSelectedTemplateId(e.target.value)}
+          disabled={loadingTemplates}
+          className="rounded border border-gray-300 px-3 py-2 text-gray-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary min-w-[200px]"
+        >
+          <option value="">Use resume / version default</option>
+          {templates.map((t) => (
+            <option key={t.id} value={t.id}>{t.name}</option>
+          ))}
+        </select>
+      </div>
 
       <Card className="p-6 space-y-4 max-w-3xl">
         <div>
