@@ -19,6 +19,7 @@ public class ResumeDocxServiceImpl implements ResumeDocxService {
 
     @Override
     public Optional<byte[]> generate(String resumeId) {
-        throw new UnsupportedOperationException("Not implemented");
+        return resumeService.getById(resumeId)
+                .map(resume -> documentGeneratorGatewayService.createCv(resume.markdown()));
     }
 }
