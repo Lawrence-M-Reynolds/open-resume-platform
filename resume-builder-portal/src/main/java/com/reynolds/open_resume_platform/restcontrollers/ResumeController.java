@@ -122,7 +122,8 @@ public class ResumeController {
     @PostMapping("/{id}/generate")
     public ResponseEntity<byte[]> generateDocx(@PathVariable String id, @RequestBody(required = false) GenerateDocxRequest request) {
         String versionId = request != null && request.versionId() != null && !request.versionId().isBlank() ? request.versionId() : null;
-        return resumeDocxService.generate(id, versionId)
+        String templateId = request != null && request.templateId() != null && !request.templateId().isBlank() ? request.templateId() : null;
+        return resumeDocxService.generate(id, versionId, templateId)
                 .map(bytes -> ResponseEntity.ok()
                         .contentType(MediaType.parseMediaType(DOCX_CONTENT_TYPE))
                         .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"resume.docx\"")
