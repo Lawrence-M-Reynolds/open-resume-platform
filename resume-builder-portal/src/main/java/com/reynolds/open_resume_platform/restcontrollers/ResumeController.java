@@ -1,5 +1,6 @@
 package com.reynolds.open_resume_platform.restcontrollers;
 
+import com.reynolds.open_resume_platform.documents.dto.GenerateDocxResponse;
 import com.reynolds.open_resume_platform.resumes.command.CreateResumeCommand;
 import com.reynolds.open_resume_platform.resumes.command.CreateResumeVersionCommand;
 import com.reynolds.open_resume_platform.resumes.command.GenerateDocxRequest;
@@ -10,12 +11,9 @@ import com.reynolds.open_resume_platform.resumes.service.ResumeDocxService;
 import com.reynolds.open_resume_platform.resumes.service.ResumeService;
 import com.reynolds.open_resume_platform.resumes.service.ResumeVersionService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -32,8 +30,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/resumes")
 public class ResumeController {
-
-    private static final String DOCX_CONTENT_TYPE = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
 
     private final ResumeService resumeService;
     private final ResumeDocxService resumeDocxService;
@@ -114,20 +110,17 @@ public class ResumeController {
         return ResponseEntity.ok(resumeVersionService.listByResumeId(id));
     }
 
-    @Operation(summary = "Generate DOCX", description = "Generates a DOCX file. Optional body with versionId: when set, uses that version's markdown and templateId; otherwise uses the current resume.")
+    @Operation(summary = "Generate DOCX", description = "Generates a DOCX file, stores it in document history, and returns documentId and downloadUrl. Optional body with versionId and/or templateId.")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "DOCX file", content = @Content(mediaType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document")),
+            @ApiResponse(responseCode = "201", description = "Document created; use downloadUrl to fetch the DOCX file"),
             @ApiResponse(responseCode = "404", description = "Resume or version not found")
     })
     @PostMapping("/{id}/generate")
-    public ResponseEntity<byte[]> generateDocx(@PathVariable String id, @RequestBody(required = false) GenerateDocxRequest request) {
+    public ResponseEntity<GenerateDocxResponse> generateDocx(@PathVariable String id, @RequestBody(required = false) GenerateDocxRequest request) {
         String versionId = request != null && request.versionId() != null && !request.versionId().isBlank() ? request.versionId() : null;
         String templateId = request != null && request.templateId() != null && !request.templateId().isBlank() ? request.templateId() : null;
         return resumeDocxService.generate(id, versionId, templateId)
-                .map(bytes -> ResponseEntity.ok()
-                        .contentType(MediaType.parseMediaType(DOCX_CONTENT_TYPE))
-                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"resume.docx\"")
-                        .body(bytes))
+                .map(response -> ResponseEntity.status(201).body(response))
                 .orElse(ResponseEntity.notFound().build());
     }
 }
