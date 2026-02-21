@@ -99,3 +99,20 @@ export async function createVersion(resumeId, body = {}) {
   });
   return handleResponse(response);
 }
+
+export async function listDocuments(resumeId) {
+  const response = await fetch(`${BASE}/${resumeId}/documents`);
+  return handleResponse(response);
+}
+
+/**
+ * Fetches the DOCX blob from a document download URL (path or full URL).
+ * @param {string} downloadUrl - Path like /api/v1/resumes/.../documents/.../download or full URL
+ * @returns {Promise<Blob>}
+ */
+export async function fetchDocumentBlob(downloadUrl) {
+  const fullUrl = downloadUrl.startsWith('http') ? downloadUrl : `${API_BASE_URL}${downloadUrl}`;
+  const response = await fetch(fullUrl);
+  if (!response.ok) throw new Error('Download failed');
+  return response.blob();
+}
