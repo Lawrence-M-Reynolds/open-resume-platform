@@ -25,6 +25,7 @@ import { downloadBlob } from "../utils/download";
 import { formatDate } from "../utils/date";
 import { getErrorMessage } from "../utils/error";
 import { listTemplates } from "../api/templates";
+import { APP_PATHS, resumeEditPath } from "../routes/paths";
 import { slugify } from "../utils/slug";
 import { useParams } from "react-router-dom";
 
@@ -207,7 +208,7 @@ export default function ResumeDetail() {
   if (loading) {
     return (
       <div>
-        <PageHeader backTo="/" backLabel="← Resumes" />
+        <PageHeader backTo={APP_PATHS.home} backLabel="← Resumes" />
         <LoadingSkeleton count={1} />
       </div>
     );
@@ -216,11 +217,11 @@ export default function ResumeDetail() {
   if (error) {
     return (
       <div>
-        <PageHeader backTo="/" backLabel="← Resumes" />
+        <PageHeader backTo={APP_PATHS.home} backLabel="← Resumes" />
         <ErrorBanner
           message={error}
           action={
-            <Button to="/" variant="primary" className="inline-block">
+            <Button to={APP_PATHS.home} variant="primary" className="inline-block">
               Back to list
             </Button>
           }
@@ -232,11 +233,11 @@ export default function ResumeDetail() {
   if (!resume) {
     return (
       <div>
-        <PageHeader backTo="/" backLabel="← Resumes" />
+        <PageHeader backTo={APP_PATHS.home} backLabel="← Resumes" />
         <ErrorBanner
           message="Resume not found"
           action={
-            <Button to="/" variant="primary" className="inline-block">
+            <Button to={APP_PATHS.home} variant="primary" className="inline-block">
               Back to list
             </Button>
           }
@@ -257,7 +258,7 @@ export default function ResumeDetail() {
       >
         {downloading ? "Downloading…" : "Download DOCX"}
       </Button>
-      <Button to={`/resumes/${resume.id}/edit`} variant="primary">
+      <Button to={resumeEditPath(resume.id)} variant="primary">
         Edit
       </Button>
     </>
@@ -266,7 +267,7 @@ export default function ResumeDetail() {
   return (
     <>
       <PageHeader
-        backTo="/"
+        backTo={APP_PATHS.home}
         backLabel="← Resumes"
         title={resume.title}
         actions={headerActions}

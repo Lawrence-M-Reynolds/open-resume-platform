@@ -1,4 +1,6 @@
-import { Outlet, Link } from 'react-router-dom';
+import { Link, Outlet } from "react-router-dom";
+
+import { APP_PATHS } from "../routes/paths";
 
 export default function Layout() {
   return (
@@ -6,20 +8,20 @@ export default function Layout() {
       <header className="bg-surface border-b border-gray-200 shadow-sm">
         <div className="max-w-4xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-2">
           <Link
-            to="/"
+            to={APP_PATHS.home}
             className="text-lg sm:text-xl font-semibold text-primary hover:text-primary-dark transition-colors duration-200 shrink-0"
           >
             Open Resume
           </Link>
           <nav className="flex items-center gap-1">
             <Link
-              to="/"
+              to={APP_PATHS.home}
               className="inline-block py-2 px-3 text-muted hover:text-primary transition-colors duration-200 font-medium min-h-[44px] flex items-center"
             >
               Resumes
             </Link>
             <Link
-              to="/templates"
+              to={APP_PATHS.templates}
               className="inline-block py-2 px-3 text-muted hover:text-primary transition-colors duration-200 font-medium min-h-[44px] flex items-center"
             >
               Templates

@@ -7,6 +7,7 @@ import Button from "../components/Button";
 import ErrorBanner from "../components/ErrorBanner";
 import PageHeader from "../components/PageHeader";
 import ResumeForm from "../components/ResumeForm";
+import { APP_PATHS, resumeDetailPath } from "../routes/paths";
 import { getErrorMessage } from "../utils/error";
 
 export default function EditResume() {
@@ -22,6 +23,7 @@ export default function EditResume() {
   const [loading, setLoading] = useState(false);
   const [loadingResume, setLoadingResume] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const detailPath = id ? resumeDetailPath(id) : APP_PATHS.home;
 
   useEffect(() => {
     if (!id) {
@@ -62,7 +64,7 @@ export default function EditResume() {
     setError(null);
     try {
       await updateResume(id, values);
-      navigate(`/resumes/${id}`);
+      navigate(resumeDetailPath(id));
     } catch (errorValue) {
       setError(getErrorMessage(errorValue));
     } finally {
@@ -73,7 +75,7 @@ export default function EditResume() {
   if (loadingResume) {
     return (
       <>
-        <PageHeader backTo="/" backLabel="← Resumes" />
+        <PageHeader backTo={APP_PATHS.home} backLabel="← Resumes" />
         <p className="text-muted">Loading…</p>
       </>
     );
@@ -82,11 +84,11 @@ export default function EditResume() {
   if (error && !initialValues.title) {
     return (
       <>
-        <PageHeader backTo="/" backLabel="← Resumes" />
+        <PageHeader backTo={APP_PATHS.home} backLabel="← Resumes" />
         <ErrorBanner
           message={error}
           action={
-            <Button to="/" variant="primary" className="inline-block">
+            <Button to={APP_PATHS.home} variant="primary" className="inline-block">
               Back to list
             </Button>
           }
@@ -98,7 +100,7 @@ export default function EditResume() {
   return (
     <>
       <PageHeader
-        backTo={`/resumes/${id}`}
+        backTo={detailPath}
         backLabel="← Back to resume"
         title="Edit resume"
       />
@@ -108,7 +110,7 @@ export default function EditResume() {
         onSubmit={handleSubmit}
         submitLabel="Save"
         submitLoadingLabel="Saving…"
-        cancelTo={`/resumes/${id}`}
+        cancelTo={detailPath}
         cancelLabel="Cancel"
         error={error}
         loading={loading}

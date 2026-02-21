@@ -5,6 +5,7 @@ import Card from "../components/Card";
 import ErrorBanner from "../components/ErrorBanner";
 import { Link } from "react-router-dom";
 import LoadingSkeleton from "../components/LoadingSkeleton";
+import { APP_PATHS, resumeDetailPath } from "../routes/paths";
 import type { Resume } from "../types/api";
 import { formatDate } from "../utils/date";
 import { getErrorMessage } from "../utils/error";
@@ -67,14 +68,14 @@ export default function Dashboard() {
         <h1 className="text-xl sm:text-2xl font-semibold text-gray-800">
           Resumes
         </h1>
-        <Button to="/resumes/new" variant="primary">
+        <Button to={APP_PATHS.resumeNew} variant="primary">
           Create resume
         </Button>
       </div>
       {resumes.length === 0 ? (
         <Card className="p-8 text-center">
           <p className="text-muted mb-4">No resumes yet.</p>
-          <Button to="/resumes/new" variant="primary">
+          <Button to={APP_PATHS.resumeNew} variant="primary">
             Create your first resume
           </Button>
         </Card>
@@ -86,7 +87,7 @@ export default function Dashboard() {
               className="p-0 transition-all duration-200 ease-out hover:shadow-md hover:-translate-y-0.5 hover:border-primary-light"
             >
               <Link
-                to={`/resumes/${resume.id}`}
+                to={resumeDetailPath(resume.id)}
                 className="block p-5 no-underline text-inherit"
               >
                 <div className="font-semibold text-gray-900">

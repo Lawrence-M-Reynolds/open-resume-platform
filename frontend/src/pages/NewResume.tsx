@@ -4,6 +4,7 @@ import PageHeader from "../components/PageHeader";
 import ResumeForm from "../components/ResumeForm";
 import { createResume } from "../api/resumes";
 import { getErrorMessage } from "../utils/error";
+import { APP_PATHS, resumeDetailPath } from "../routes/paths";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
@@ -25,7 +26,7 @@ export default function NewResume() {
     setError(null);
     try {
       const resume = await createResume(values);
-      navigate(`/resumes/${resume.id}`);
+      navigate(resumeDetailPath(resume.id));
     } catch (errorValue) {
       setError(getErrorMessage(errorValue));
     } finally {
@@ -35,13 +36,13 @@ export default function NewResume() {
 
   return (
     <>
-      <PageHeader backTo="/" backLabel="← Resumes" title="New resume" />
+      <PageHeader backTo={APP_PATHS.home} backLabel="← Resumes" title="New resume" />
       <ResumeForm
         initialValues={EMPTY_VALUES}
         onSubmit={handleSubmit}
         submitLabel="Create resume"
         submitLoadingLabel="Creating…"
-        cancelTo="/"
+        cancelTo={APP_PATHS.home}
         cancelLabel="Cancel"
         error={error}
         loading={loading}
