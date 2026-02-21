@@ -92,9 +92,8 @@ export default function ResumeDetail() {
   };
 
   useEffect(() => {
-    if (!resume) return;
     loadVersions();
-  }, [resume?.id]);
+  }, [id]);
 
   const loadDocuments = (): void => {
     if (!id) {
@@ -109,9 +108,8 @@ export default function ResumeDetail() {
   };
 
   useEffect(() => {
-    if (!resume) return;
     loadDocuments();
-  }, [resume?.id]);
+  }, [id]);
 
   useEffect(() => {
     setLoadingTemplates(true);
