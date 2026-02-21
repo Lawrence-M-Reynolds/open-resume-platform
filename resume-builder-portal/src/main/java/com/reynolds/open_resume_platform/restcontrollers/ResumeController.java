@@ -1,6 +1,8 @@
 package com.reynolds.open_resume_platform.restcontrollers;
 
+import com.reynolds.open_resume_platform.documents.dto.DocumentSummary;
 import com.reynolds.open_resume_platform.documents.dto.GenerateDocxResponse;
+import com.reynolds.open_resume_platform.documents.service.GeneratedDocumentService;
 import com.reynolds.open_resume_platform.resumes.command.CreateResumeCommand;
 import com.reynolds.open_resume_platform.resumes.command.CreateResumeVersionCommand;
 import com.reynolds.open_resume_platform.resumes.command.GenerateDocxRequest;
@@ -14,6 +16,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -31,14 +35,18 @@ import java.util.List;
 @RequestMapping("/api/v1/resumes")
 public class ResumeController {
 
+    private static final String DOCX_CONTENT_TYPE = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+
     private final ResumeService resumeService;
     private final ResumeDocxService resumeDocxService;
     private final ResumeVersionService resumeVersionService;
+    private final GeneratedDocumentService generatedDocumentService;
 
-    public ResumeController(ResumeService resumeService, ResumeDocxService resumeDocxService, ResumeVersionService resumeVersionService) {
+    public ResumeController(ResumeService resumeService, ResumeDocxService resumeDocxService, ResumeVersionService resumeVersionService, GeneratedDocumentService generatedDocumentService) {
         this.resumeService = resumeService;
         this.resumeDocxService = resumeDocxService;
         this.resumeVersionService = resumeVersionService;
+        this.generatedDocumentService = generatedDocumentService;
     }
 
     @Operation(summary = "Create a resume", description = "Creates a new draft resume. Returns the created resume with id, status DRAFT, latestVersionNo 1.")
@@ -121,6 +129,34 @@ public class ResumeController {
         String templateId = request != null && request.templateId() != null && !request.templateId().isBlank() ? request.templateId() : null;
         return resumeDocxService.generate(id, versionId, templateId)
                 .map(response -> ResponseEntity.status(201).body(response))
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @Operation(summary = "List generated documents", description = "Returns all stored generated DOCX documents for the resume, newest first.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "List of documents (may be empty)"),
+            @ApiResponse(responseCode = "404", description = "Resume not found")
+    })
+    @GetMapping("/{id}/documents")
+    public ResponseEntity<List<DocumentSummary>> listDocuments(@PathVariable String id) {
+        if (resumeService.getById(id).isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(generatedDocumentService.listByResumeId(id));
+    }
+
+    @Operation(summary = "Download generated document", description = "Returns the DOCX file for a stored document. Document must belong to the resume.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "DOCX file"),
+            @ApiResponse(responseCode = "404", description = "Resume or document not found")
+    })
+    @GetMapping("/{id}/documents/{documentId}/download")
+    public ResponseEntity<byte[]> downloadDocument(@PathVariable String id, @PathVariable String documentId) {
+        return generatedDocumentService.getContentForDownload(id, documentId)
+                .map(bytes -> ResponseEntity.ok()
+                        .contentType(MediaType.parseMediaType(DOCX_CONTENT_TYPE))
+                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"resume.docx\"")
+                        .body(bytes))
                 .orElse(ResponseEntity.notFound().build());
     }
 }
