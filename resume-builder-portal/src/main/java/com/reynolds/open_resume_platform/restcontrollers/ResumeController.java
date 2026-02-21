@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
 import java.util.List;
 
 @Tag(name = "Resumes", description = "Create, list, get, update resumes and generate DOCX")
@@ -44,7 +45,7 @@ public class ResumeController {
             @ApiResponse(responseCode = "400", description = "Invalid input (title < 3 chars or blank markdown)")
     })
     @PostMapping
-    public ResponseEntity<Resume> create(@RequestBody CreateResumeCommand command) {
+    public ResponseEntity<Resume> create(@Valid @RequestBody CreateResumeCommand command) {
         Resume resume = resumeService.create(command);
         return ResponseEntity.status(201).body(resume);
     }
@@ -75,7 +76,7 @@ public class ResumeController {
             @ApiResponse(responseCode = "400", description = "Invalid input")
     })
     @PatchMapping("/{id}")
-    public ResponseEntity<Resume> update(@PathVariable String id, @RequestBody UpdateResumeCommand command) {
+    public ResponseEntity<Resume> update(@PathVariable String id, @Valid @RequestBody UpdateResumeCommand command) {
         return resumeService.update(id, command)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
