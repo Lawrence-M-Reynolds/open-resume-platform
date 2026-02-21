@@ -1,4 +1,7 @@
 from fastapi import FastAPI, Response, Request
+import base64
+import os
+import uuid
 import subprocess
 
 app = FastAPI()
@@ -9,13 +12,18 @@ async def log_requests(request: Request, call_next):
     response = await call_next(request)
     return response
 
-import base64
-import os
-import uuid
-import subprocess
-from fastapi import FastAPI, Response, Request
+# 1. Disable strict slashes (so /convert and /convert/ both work)
+app = FastAPI(redirect_slashes=False)
 
-app = FastAPI()
+# 2. Use a "Catch-All" route to be 100% sure
+@app.api_route("/{path_name:path}", methods=["POST"])
+async def catch_all(request: Request, path_name: str):
+    # This print will prove it's working in your logs
+    print(f"!!! TRAP TRIGGERED !!! Path: {path_name}")
+
+    # YOUR CONVERSION LOGIC HERE
+    data = await request.json()
+    # ... etc
 
 @app.post("/")
 @app.post("/convert")
