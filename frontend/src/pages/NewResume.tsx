@@ -2,6 +2,7 @@ import type { ResumeFormValues, ResumePayload } from "../types/api";
 
 import PageHeader from "../components/PageHeader";
 import ResumeForm from "../components/ResumeForm";
+import { useToast } from "../components/ToastProvider";
 import { useCreateResumeMutation } from "../hooks/useResumeMutations";
 import { getErrorMessage } from "../utils/error";
 import { APP_PATHS, resumeDetailPath } from "../routes/paths";
@@ -18,6 +19,7 @@ const EMPTY_VALUES: ResumeFormValues = {
 
 export default function NewResume() {
   const navigate = useNavigate();
+  const toast = useToast();
   const createResumeMutation = useCreateResumeMutation();
   const [error, setError] = useState<string | null>(null);
 
@@ -25,9 +27,18 @@ export default function NewResume() {
     setError(null);
     try {
       const resume = await createResumeMutation.mutateAsync(values);
+      toast.success({
+        title: "Resume created",
+        description: "Opening the new resume.",
+      });
       navigate(resumeDetailPath(resume.id));
     } catch (errorValue) {
-      setError(getErrorMessage(errorValue));
+      const message = getErrorMessage(errorValue);
+      setError(message);
+      toast.error({
+        title: "Couldn't create resume",
+        description: message,
+      });
     }
   };
 

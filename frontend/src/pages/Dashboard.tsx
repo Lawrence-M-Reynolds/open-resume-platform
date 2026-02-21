@@ -3,14 +3,35 @@ import Card from "../components/Card";
 import ErrorBanner from "../components/ErrorBanner";
 import { Link } from "react-router-dom";
 import LoadingSkeleton from "../components/LoadingSkeleton";
+import { useToast } from "../components/ToastProvider";
 import { useResumesData } from "../hooks/useResumesData";
 import { APP_PATHS, resumeDetailPath } from "../routes/paths";
 import { formatDate } from "../utils/date";
 import { getErrorMessage } from "../utils/error";
 
 export default function Dashboard() {
+  const toast = useToast();
   const resumesQuery = useResumesData();
   const resumes = resumesQuery.data ?? [];
+
+  const handleRetry = async (): Promise<void> => {
+    toast.info({
+      title: "Retrying resumes",
+      description: "Fetching the latest resume list.",
+    });
+    const result = await resumesQuery.refetch();
+    if (result.error) {
+      toast.error({
+        title: "Couldn't refresh resumes",
+        description: getErrorMessage(result.error),
+      });
+      return;
+    }
+    toast.success({
+      title: "Resumes refreshed",
+      description: "Latest data loaded.",
+    });
+  };
 
   if (resumesQuery.isPending) {
     return (
@@ -35,7 +56,7 @@ export default function Dashboard() {
             <Button
               variant="danger"
               onClick={() => {
-                void resumesQuery.refetch();
+                void handleRetry();
               }}
             >
               Retry

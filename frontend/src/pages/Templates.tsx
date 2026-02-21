@@ -5,6 +5,7 @@ import Button from "../components/Button";
 import Card from "../components/Card";
 import ErrorBanner from "../components/ErrorBanner";
 import LoadingSkeleton from "../components/LoadingSkeleton";
+import { useToast } from "../components/ToastProvider";
 import { useTemplatesData } from "../hooks/useTemplatesData";
 import {
   useCreateTemplateMutation,
@@ -15,6 +16,7 @@ import { downloadBlob } from "../utils/download";
 import { getErrorMessage } from "../utils/error";
 
 export default function Templates() {
+  const toast = useToast();
   const templatesQuery = useTemplatesData();
   const createTemplateMutation = useCreateTemplateMutation();
   const downloadTemplateMutation = useDownloadTemplateMutation();
@@ -29,6 +31,25 @@ export default function Templates() {
   const templates = templatesQuery.data ?? [];
   const creating = createTemplateMutation.isPending;
   const downloading = downloadTemplateMutation.isPending;
+
+  const handleRetry = async (): Promise<void> => {
+    toast.info({
+      title: "Retrying templates",
+      description: "Fetching latest template list.",
+    });
+    const result = await templatesQuery.refetch();
+    if (result.error) {
+      toast.error({
+        title: "Couldn't refresh templates",
+        description: getErrorMessage(result.error),
+      });
+      return;
+    }
+    toast.success({
+      title: "Templates refreshed",
+      description: "Latest template data loaded.",
+    });
+  };
 
   const closeAddModal = (): void => {
     if (creating) return;
@@ -49,9 +70,18 @@ export default function Templates() {
         name: trimmedName,
         description: description.trim() || undefined,
       });
+      toast.success({
+        title: "Template added",
+        description: `"${trimmedName}" is now available for generation.`,
+      });
       closeAddModal();
     } catch (errorValue) {
-      setCreateError(getErrorMessage(errorValue));
+      const message = getErrorMessage(errorValue);
+      setCreateError(message);
+      toast.error({
+        title: "Couldn't add template",
+        description: message,
+      });
     }
   };
 
@@ -67,8 +97,17 @@ export default function Templates() {
           ? "open-resume-template.docx"
           : `${template.id}.docx`;
       downloadBlob(blob, filename);
+      toast.success({
+        title: "Template download ready",
+        description: `${filename} was downloaded.`,
+      });
     } catch (errorValue) {
-      setDownloadError(getErrorMessage(errorValue));
+      const message = getErrorMessage(errorValue);
+      setDownloadError(message);
+      toast.error({
+        title: "Template download failed",
+        description: message,
+      });
     } finally {
       setDownloadingId(null);
     }
@@ -97,7 +136,7 @@ export default function Templates() {
             <Button
               variant="danger"
               onClick={() => {
-                void templatesQuery.refetch();
+                void handleRetry();
               }}
             >
               Retry

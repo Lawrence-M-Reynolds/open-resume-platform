@@ -7,6 +7,7 @@ import ErrorBanner from "../components/ErrorBanner";
 import PageHeader from "../components/PageHeader";
 import { useResumeData } from "../hooks/useResumeData";
 import { useUpdateResumeMutation } from "../hooks/useResumeMutations";
+import { useToast } from "../components/ToastProvider";
 import ResumeForm from "../components/ResumeForm";
 import { APP_PATHS, resumeDetailPath } from "../routes/paths";
 import { getErrorMessage } from "../utils/error";
@@ -15,6 +16,7 @@ export default function EditResume() {
   const { id } = useParams();
   const hasResumeId = id != null && id !== "";
   const navigate = useNavigate();
+  const toast = useToast();
   const resumeQuery = useResumeData(hasResumeId ? id : undefined);
   const updateResumeMutation = useUpdateResumeMutation(hasResumeId ? id : undefined);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -25,9 +27,18 @@ export default function EditResume() {
     setSubmitError(null);
     try {
       await updateResumeMutation.mutateAsync(values);
+      toast.success({
+        title: "Resume updated",
+        description: "Your changes were saved.",
+      });
       navigate(resumeDetailPath(id));
     } catch (errorValue) {
-      setSubmitError(getErrorMessage(errorValue));
+      const message = getErrorMessage(errorValue);
+      setSubmitError(message);
+      toast.error({
+        title: "Couldn't save resume",
+        description: message,
+      });
     }
   };
 

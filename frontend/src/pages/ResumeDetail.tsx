@@ -16,6 +16,7 @@ import ErrorBanner from "../components/ErrorBanner";
 import type { FormEvent } from "react";
 import LoadingSkeleton from "../components/LoadingSkeleton";
 import PageHeader from "../components/PageHeader";
+import { useToast } from "../components/ToastProvider";
 import { downloadBlob } from "../utils/download";
 import { fetchDocumentBlob } from "../api/resumes";
 import { formatDate } from "../utils/date";
@@ -29,6 +30,7 @@ export default function ResumeDetail() {
   const { id } = useParams();
   const resumeId = id ?? "";
   const hasResumeId = resumeId !== "";
+  const toast = useToast();
 
   const { resumeQuery, versionsQuery, documentsQuery, templatesQuery } =
     useResumeDetailData(hasResumeId ? resumeId : undefined);
@@ -82,9 +84,18 @@ export default function ResumeDetail() {
       await createVariantMutation.mutateAsync({
         label: variantLabel.trim() || undefined,
       });
+      toast.success({
+        title: "Client variant created",
+        description: "New snapshot added to variants.",
+      });
       closeCreateVariantModal();
     } catch (errorValue) {
-      setVariantError(getErrorMessage(errorValue));
+      const message = getErrorMessage(errorValue);
+      setVariantError(message);
+      toast.error({
+        title: "Couldn't create client variant",
+        description: message,
+      });
     }
   };
 
@@ -105,9 +116,19 @@ export default function ResumeDetail() {
       const blob = await generateDocxMutation.mutateAsync(
         buildGenerateOptions(),
       );
-      downloadBlob(blob, `${slugify(resume.title)}.docx`);
+      const fileName = `${slugify(resume.title)}.docx`;
+      downloadBlob(blob, fileName);
+      toast.success({
+        title: "DOCX generated",
+        description: `${fileName} was downloaded.`,
+      });
     } catch (errorValue) {
-      setDownloadError(getErrorMessage(errorValue));
+      const message = getErrorMessage(errorValue);
+      setDownloadError(message);
+      toast.error({
+        title: "DOCX generation failed",
+        description: message,
+      });
     }
   };
 
@@ -125,8 +146,17 @@ export default function ResumeDetail() {
       const baseName = slugify(resume.title);
       const fileName = `${baseName}-v${version.versionNo}.docx`;
       downloadBlob(blob, fileName);
+      toast.success({
+        title: `Version v${version.versionNo} generated`,
+        description: `${fileName} was downloaded.`,
+      });
     } catch (errorValue) {
-      setDownloadError(getErrorMessage(errorValue));
+      const message = getErrorMessage(errorValue);
+      setDownloadError(message);
+      toast.error({
+        title: "Version DOCX generation failed",
+        description: message,
+      });
     } finally {
       setDownloadingVersionId(null);
     }
@@ -144,8 +174,17 @@ export default function ResumeDetail() {
       const baseName = slugify(resume.title);
       const fileName = `${baseName}-${document.id.slice(0, 8)}.docx`;
       downloadBlob(blob, fileName);
+      toast.success({
+        title: "File downloaded",
+        description: `${fileName} was downloaded.`,
+      });
     } catch (errorValue) {
-      setDownloadError(getErrorMessage(errorValue));
+      const message = getErrorMessage(errorValue);
+      setDownloadError(message);
+      toast.error({
+        title: "File download failed",
+        description: message,
+      });
     } finally {
       setDownloadingDocumentId(null);
     }
