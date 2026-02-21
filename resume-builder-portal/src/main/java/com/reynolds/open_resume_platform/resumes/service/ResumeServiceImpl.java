@@ -62,6 +62,32 @@ public class ResumeServiceImpl implements ResumeService {
 
     @Override
     public Optional<Resume> update(String id, UpdateResumeCommand command) {
-        throw new UnsupportedOperationException("Not implemented");
+        return repository.findById(id)
+                .map(existing -> {
+                    String title = command.title() != null ? command.title().trim() : "";
+                    String markdown = command.markdown() != null ? command.markdown().trim() : "";
+
+                    if (title.length() < MIN_TITLE_LENGTH) {
+                        throw new IllegalArgumentException("Title must be at least " + MIN_TITLE_LENGTH + " characters");
+                    }
+                    if (markdown.isBlank()) {
+                        throw new IllegalArgumentException("Markdown must not be blank");
+                    }
+
+                    Instant now = Instant.now();
+                    Resume updated = new Resume(
+                            existing.id(),
+                            existing.status(),
+                            existing.latestVersionNo(),
+                            existing.createdAt(),
+                            now,
+                            title,
+                            command.targetRole(),
+                            command.targetCompany(),
+                            command.templateId(),
+                            markdown
+                    );
+                    return repository.save(updated);
+                });
     }
 }
