@@ -33,7 +33,7 @@ export default function ResumeDetail() {
   const hasResumeId = resumeId !== "";
   const toast = useToast();
 
-  const { resumeQuery, versionsQuery, documentsQuery, templatesQuery } =
+  const { resumeQuery, sectionsQuery, versionsQuery, documentsQuery, templatesQuery } =
     useResumeDetailData(hasResumeId ? resumeId : undefined);
 
   const createVariantMutation = useCreateResumeVersionMutation(
@@ -62,10 +62,12 @@ export default function ResumeDetail() {
   const [regeneratingLast, setRegeneratingLast] = useState(false);
 
   const resume = resumeQuery.data ?? null;
+  const sections = sectionsQuery.data ?? [];
   const versions = versionsQuery.data ?? [];
   const documents = documentsQuery.data ?? [];
   const templates = templatesQuery.data ?? [];
 
+  const loadingSections = sectionsQuery.isPending;
   const loadingVersions = versionsQuery.isPending;
   const loadingDocuments = documentsQuery.isPending;
   const loadingTemplates = templatesQuery.isPending;
@@ -79,6 +81,8 @@ export default function ResumeDetail() {
       ? "Downloading generated document."
       : creatingVariant
         ? "Creating client variant."
+        : loadingSections
+          ? "Loading resume sections."
         : loadingDocuments
           ? "Loading generated files."
           : loadingVersions
@@ -569,12 +573,40 @@ export default function ResumeDetail() {
           <p className="text-gray-900 mt-0.5">{formatDate(resume.updatedAt)}</p>
         </div>
         <div>
-          <span className="text-sm font-medium text-gray-500">
-            Content (Markdown)
-          </span>
-          <pre className="mt-2 p-4 bg-gray-50 rounded border border-gray-200 text-gray-900 text-sm font-mono whitespace-pre-wrap break-words overflow-x-auto min-w-0">
-            {resume.markdown || "—"}
-          </pre>
+          <span className="text-sm font-medium text-gray-500">Content</span>
+          {loadingSections ? (
+            <p className="text-muted mt-2">Loading sections…</p>
+          ) : sections.length === 0 ? (
+            <>
+              <p className="text-xs text-muted mt-2">
+                No sections found for this resume. Showing fallback markdown.
+              </p>
+              <pre className="mt-2 p-4 bg-gray-50 rounded border border-gray-200 text-gray-900 text-sm font-mono whitespace-pre-wrap break-words overflow-x-auto min-w-0">
+                {resume.markdown || "—"}
+              </pre>
+            </>
+          ) : (
+            <div className="mt-2 space-y-3">
+              {sections.map((section) => (
+                <div
+                  key={section.id}
+                  className="rounded border border-gray-200 bg-gray-50 p-4"
+                >
+                  <p className="text-sm font-semibold text-gray-900">
+                    {section.order}. {section.title}
+                  </p>
+                  <pre className="mt-2 text-gray-900 text-sm font-mono whitespace-pre-wrap break-words overflow-x-auto min-w-0">
+                    {section.markdown || "—"}
+                  </pre>
+                </div>
+              ))}
+            </div>
+          )}
+          {sectionsQuery.isError && (
+            <p className="text-xs text-error mt-2">
+              Couldn&apos;t load sections: {getErrorMessage(sectionsQuery.error)}
+            </p>
+          )}
         </div>
       </Card>
       <div className="mt-8 max-w-3xl">

@@ -9,6 +9,7 @@ import { useResumeData } from "../hooks/useResumeData";
 import { useUpdateResumeMutation } from "../hooks/useResumeMutations";
 import { useToast } from "../components/ToastProvider";
 import ResumeForm from "../components/ResumeForm";
+import ResumeSectionsEditor from "../components/ResumeSectionsEditor";
 import { APP_PATHS, resumeDetailPath } from "../routes/paths";
 import { getErrorMessage } from "../utils/error";
 
@@ -108,8 +109,8 @@ export default function EditResume() {
         key={id}
         initialValues={initialValues}
         onSubmit={handleSubmit}
-        submitLabel="Save changes"
-        submitLoadingLabel="Saving…"
+        submitLabel="Save resume details"
+        submitLoadingLabel="Saving resume details…"
         cancelTo={detailPath}
         cancelLabel="Back to resume"
         error={submitError}
@@ -119,7 +120,9 @@ export default function EditResume() {
         onDirtyChange={(isDirty) => {
           if (isDirty) setSaveStatus(null);
         }}
+        showMarkdownField={false}
       />
+      <ResumeSectionsEditor resumeId={id ?? ""} />
     </>
   );
 }
