@@ -7,14 +7,12 @@ import com.reynolds.open_resume_platform.service.DocumentGeneratorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import java.lang.invoke.MethodHandles;
 
@@ -31,14 +29,14 @@ public class CvGenerationRestController {
 	}
 
 	@RequestMapping(value = "/", method = RequestMethod.POST)
-	public ResponseEntity<StreamingResponseBody> generateCv(@RequestBody CvGenerationRequest cvGenerationRequest) {
+	public ResponseEntity<byte[]> generateCv(@RequestBody CvGenerationRequest cvGenerationRequest) {
 
 		logger.debug("CvGenerationRestController called: {}", cvGenerationRequest);
-		
+
 		String base64TemplateVal = getBase64TemplateVal(cvGenerationRequest.templateId());
 		FileType fileType = cvGenerationRequest.fileType();
 
-		StreamingResponseBody streamingResponseBody = documentGeneratorService.callService(
+		byte[] body = documentGeneratorService.callService(
 				base64TemplateVal,
 				fileType.getMessageValue(),
 				cvGenerationRequest.cvMarkdown()
@@ -46,7 +44,7 @@ public class CvGenerationRestController {
 
 		return ResponseEntity.ok()
 				.contentType(MediaType.parseMediaType(fileType.getContentTypeHeader()))
-				.body(streamingResponseBody);
+				.body(body);
 	}
 
 	private String getBase64TemplateVal(String templateId) {
