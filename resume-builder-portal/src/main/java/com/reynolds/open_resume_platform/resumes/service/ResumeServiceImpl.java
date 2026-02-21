@@ -6,6 +6,7 @@ import com.reynolds.open_resume_platform.resumes.repository.ResumeRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -45,5 +46,10 @@ public class ResumeServiceImpl implements ResumeService {
                 markdown
         );
         return repository.save(resume);
+    }
+
+    @Override
+    public Optional<Resume> getById(String id) {
+        return repository.findById(id);
     }
 }
