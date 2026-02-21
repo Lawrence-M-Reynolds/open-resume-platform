@@ -4,7 +4,7 @@ services:
       context: ./frontend
       # Passing the API URL so React knows where to send requests
       args:
-        - REACT_APP_API_URL=http://localhost:8081
+        - VITE_API_URL=http://localhost:8081
     container_name: resume-builder-frontend
     ports:
       - "80:80" # Map Windows 3000 to Nginx 80
