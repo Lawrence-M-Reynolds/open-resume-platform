@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { listResumes } from '../api/resumes.js';
 import Button from '../components/Button.jsx';
+import Card from '../components/Card.jsx';
 import ErrorBanner from '../components/ErrorBanner.jsx';
 import LoadingSkeleton from '../components/LoadingSkeleton.jsx';
 import { formatDate } from '../utils/date.js';
@@ -62,28 +63,32 @@ export default function Dashboard() {
         </Button>
       </div>
       {resumes.length === 0 ? (
-        <div className="bg-surface rounded-lg border border-gray-200 shadow-sm p-8 text-center">
+        <Card className="p-8 text-center">
           <p className="text-muted mb-4">No resumes yet.</p>
           <Button to="/resumes/new" variant="primary">
             Create your first resume
           </Button>
-        </div>
+        </Card>
       ) : (
       <div className="space-y-4">
         {resumes.map((r) => (
-          <Link
+          <Card
             key={r.id}
-            to={`/resumes/${r.id}`}
-            className="block bg-surface rounded-lg border border-gray-200 shadow-sm p-5 transition-all duration-200 ease-out hover:shadow-md hover:-translate-y-0.5 hover:border-primary-light no-underline text-inherit"
+            className="p-0 transition-all duration-200 ease-out hover:shadow-md hover:-translate-y-0.5 hover:border-primary-light"
           >
-            <div className="font-semibold text-gray-900">{r.title}</div>
-            <div className="text-muted text-sm mt-1">
-              {r.targetRole || '—'}
-            </div>
-            <div className="text-muted text-sm mt-1">
-              Updated {formatDate(r.updatedAt)}
-            </div>
-          </Link>
+            <Link
+              to={`/resumes/${r.id}`}
+              className="block p-5 no-underline text-inherit"
+            >
+              <div className="font-semibold text-gray-900">{r.title}</div>
+              <div className="text-muted text-sm mt-1">
+                {r.targetRole || '—'}
+              </div>
+              <div className="text-muted text-sm mt-1">
+                Updated {formatDate(r.updatedAt)}
+              </div>
+            </Link>
+          </Card>
         ))}
       </div>
       )}

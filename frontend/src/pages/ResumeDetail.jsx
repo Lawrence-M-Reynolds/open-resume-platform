@@ -5,6 +5,7 @@ import { formatDate } from '../utils/date.js';
 import { downloadBlob } from '../utils/download.js';
 import { slugify } from '../utils/slug.js';
 import Button from '../components/Button.jsx';
+import Card from '../components/Card.jsx';
 import ErrorBanner from '../components/ErrorBanner.jsx';
 import LoadingSkeleton from '../components/LoadingSkeleton.jsx';
 import PageHeader from '../components/PageHeader.jsx';
@@ -102,7 +103,7 @@ export default function ResumeDetail() {
         </div>
       )}
 
-      <div className="bg-surface rounded-lg border border-gray-200 shadow-sm p-6 space-y-4 max-w-3xl">
+      <Card className="p-6 space-y-4 max-w-3xl">
         <div>
           <span className="text-sm font-medium text-gray-500">Target role</span>
           <p className="text-gray-900 mt-0.5">{resume.targetRole || '—'}</p>
@@ -125,7 +126,7 @@ export default function ResumeDetail() {
             {resume.markdown || '—'}
           </pre>
         </div>
-      </div>
+      </Card>
     </div>
   );
 }
