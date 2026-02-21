@@ -59,3 +59,17 @@ export async function generateDocx(id) {
   });
   return handleResponse(response, { expectJson: false });
 }
+
+export async function listVersions(resumeId) {
+  const response = await fetch(`${BASE}/${resumeId}/versions`);
+  return handleResponse(response);
+}
+
+export async function createVersion(resumeId, body = {}) {
+  const response = await fetch(`${BASE}/${resumeId}/versions`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  return handleResponse(response);
+}
