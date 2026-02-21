@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import type { FormEvent } from 'react';
 import type { ResumeFormValues, ResumePayload } from '../types/api';
-import { MIN_TITLE_LENGTH } from '../constants/resume';
+import { MIN_TITLE_LENGTH, STARTER_MARKDOWN } from '../constants/resume';
+import { useUnsavedChangesWarning } from '../hooks/useUnsavedChangesWarning';
 import Button from './Button';
 import Card from './Card';
 import ErrorBanner from './ErrorBanner';
@@ -19,6 +20,11 @@ interface ResumeFormProps {
   cancelLabel?: string;
   error?: string | null;
   loading?: boolean;
+  statusMessage?: string | null;
+  showMarkdownStarter?: boolean;
+  warnOnUnsavedChanges?: boolean;
+  unsavedChangesMessage?: string;
+  onDirtyChange?: (isDirty: boolean) => void;
 }
 
 export default function ResumeForm({
@@ -30,6 +36,11 @@ export default function ResumeForm({
   cancelLabel = 'Cancel',
   error = null,
   loading = false,
+  statusMessage = null,
+  showMarkdownStarter = false,
+  warnOnUnsavedChanges = false,
+  unsavedChangesMessage,
+  onDirtyChange,
 }: ResumeFormProps) {
   const [title, setTitle] = useState(initialValues.title ?? '');
   const [targetRole, setTargetRole] = useState(initialValues.targetRole ?? '');
@@ -56,6 +67,21 @@ export default function ResumeForm({
   const titleValid = titleTrimmed.length >= MIN_TITLE_LENGTH;
   const markdownValid = markdownTrimmed.length > 0;
   const valid = titleValid && markdownValid;
+  const isDirty =
+    title !== (initialValues.title ?? '') ||
+    targetRole !== (initialValues.targetRole ?? '') ||
+    targetCompany !== (initialValues.targetCompany ?? '') ||
+    templateId !== (initialValues.templateId ?? '') ||
+    markdown !== (initialValues.markdown ?? '');
+
+  useUnsavedChangesWarning(
+    warnOnUnsavedChanges && isDirty && !loading,
+    unsavedChangesMessage
+  );
+
+  useEffect(() => {
+    onDirtyChange?.(isDirty);
+  }, [isDirty, onDirtyChange]);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -69,15 +95,26 @@ export default function ResumeForm({
     });
   };
 
+  const handleInsertStarterMarkdown = () => {
+    if (loading) return;
+    setMarkdown(STARTER_MARKDOWN);
+  };
+
   return (
     <Card className="p-6 space-y-4 max-w-2xl">
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4" aria-busy={loading}>
+        <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+          {loading ? submitLoadingLabel : ""}
+        </p>
         {error && <ErrorBanner message={error} compact />}
 
         <div>
           <label htmlFor="resume-form-title" className={labelClass}>
             Title *
           </label>
+          <p className="text-xs text-muted mb-2">
+            Required. Use a short internal name so this resume is easy to find.
+          </p>
           <input
             id="resume-form-title"
             type="text"
@@ -98,6 +135,9 @@ export default function ResumeForm({
           <label htmlFor="resume-form-targetRole" className={labelClass}>
             Target role
           </label>
+          <p className="text-xs text-muted mb-2">
+            Optional. Helps tailor language for a specific position.
+          </p>
           <input
             id="resume-form-targetRole"
             type="text"
@@ -112,6 +152,9 @@ export default function ResumeForm({
           <label htmlFor="resume-form-targetCompany" className={labelClass}>
             Target company
           </label>
+          <p className="text-xs text-muted mb-2">
+            Optional. Add the company to personalize this version.
+          </p>
           <input
             id="resume-form-targetCompany"
             type="text"
@@ -126,6 +169,9 @@ export default function ResumeForm({
           <label htmlFor="resume-form-templateId" className={labelClass}>
             Template ID
           </label>
+          <p className="text-xs text-muted mb-2">
+            Optional. Leave blank to choose a template later before generation.
+          </p>
           <input
             id="resume-form-templateId"
             type="text"
@@ -137,9 +183,24 @@ export default function ResumeForm({
         </div>
 
         <div>
-          <label htmlFor="resume-form-markdown" className={labelClass}>
-            Content (Markdown) *
-          </label>
+          <div className="flex items-center justify-between gap-2 mb-1">
+            <label htmlFor="resume-form-markdown" className={labelClass}>
+              Content (Markdown) *
+            </label>
+            {showMarkdownStarter && (
+              <button
+                type="button"
+                onClick={handleInsertStarterMarkdown}
+                className="text-sm font-medium text-primary hover:text-primary-dark transition-colors duration-200"
+              >
+                Insert starter markdown
+              </button>
+            )}
+          </div>
+          <p className="text-xs text-muted mb-2">
+            Required. Use headings such as Summary, Experience, Skills, and
+            Education.
+          </p>
           <textarea
             id="resume-form-markdown"
             value={markdown}
@@ -154,18 +215,30 @@ export default function ResumeForm({
           )}
         </div>
 
-        <div className="flex flex-wrap gap-3 pt-2">
-          <Button
-            type="submit"
-            variant="primary"
-            disabled={!valid || loading}
-            className="w-full sm:w-auto"
-          >
-            {loading ? submitLoadingLabel : submitLabel}
-          </Button>
-          <Button to={cancelTo} variant="secondary" className="w-full sm:w-auto">
-            {cancelLabel}
-          </Button>
+        <div className="pt-2 space-y-2">
+          <div className="flex flex-wrap gap-3">
+            <Button
+              type="submit"
+              variant="primary"
+              disabled={!valid || loading}
+              className="w-full sm:w-auto"
+            >
+              {loading ? submitLoadingLabel : submitLabel}
+            </Button>
+            <Button to={cancelTo} variant="secondary" className="w-full sm:w-auto">
+              {cancelLabel}
+            </Button>
+          </div>
+          {statusMessage && (
+            <p
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+              className="text-sm font-medium text-primary"
+            >
+              ✓ {statusMessage}
+            </p>
+          )}
         </div>
       </form>
     </Card>

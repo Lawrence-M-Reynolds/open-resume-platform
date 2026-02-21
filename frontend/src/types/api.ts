@@ -37,6 +37,8 @@ export interface ResumeDocument {
   downloadUrl: string;
   generatedAt: string;
   versionId: string | null;
+  templateId?: string | null;
+  templateName?: string | null;
 }
 
 export interface Template {

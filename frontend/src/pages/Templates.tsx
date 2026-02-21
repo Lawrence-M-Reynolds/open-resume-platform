@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { FormEvent } from "react";
 
 import Button from "../components/Button";
@@ -11,9 +11,11 @@ import {
   useCreateTemplateMutation,
   useDownloadTemplateMutation,
 } from "../hooks/useTemplatesMutations";
+import { useModalAccessibility } from "../hooks/useModalAccessibility";
 import type { Template } from "../types/api";
 import { downloadBlob } from "../utils/download";
 import { getErrorMessage } from "../utils/error";
+import { getTemplateUseCase, matchesTemplateQuery } from "../utils/template";
 
 export default function Templates() {
   const toast = useToast();
@@ -27,8 +29,14 @@ export default function Templates() {
   const [createError, setCreateError] = useState<string | null>(null);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [downloadError, setDownloadError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const templates = templatesQuery.data ?? [];
+  const filteredTemplates = useMemo(
+    () =>
+      templates.filter((template) => matchesTemplateQuery(template, searchQuery)),
+    [templates, searchQuery],
+  );
   const creating = createTemplateMutation.isPending;
   const downloading = downloadTemplateMutation.isPending;
 
@@ -58,6 +66,12 @@ export default function Templates() {
     setName("");
     setDescription("");
   };
+
+  const { modalRef, initialFocusRef } = useModalAccessibility({
+    open: showAddModal,
+    allowClose: !creating,
+    onClose: closeAddModal,
+  });
 
   const handleAdd = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
@@ -113,12 +127,26 @@ export default function Templates() {
     }
   };
 
+  const pageHeader = (
+    <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <h1 className="text-xl sm:text-2xl font-semibold text-gray-800">
+          Templates
+        </h1>
+        <p className="text-sm text-muted mt-1">
+          Templates control DOCX layout and styling.
+        </p>
+      </div>
+      <Button variant="primary" onClick={() => setShowAddModal(true)}>
+        Add template
+      </Button>
+    </div>
+  );
+
   if (templatesQuery.isPending) {
     return (
       <div>
-        <h1 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-6">
-          Templates
-        </h1>
+        {pageHeader}
         <LoadingSkeleton />
       </div>
     );
@@ -127,9 +155,7 @@ export default function Templates() {
   if (templatesQuery.isError) {
     return (
       <div>
-        <h1 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-6">
-          Templates
-        </h1>
+        {pageHeader}
         <ErrorBanner
           message={getErrorMessage(templatesQuery.error)}
           action={
@@ -149,51 +175,96 @@ export default function Templates() {
 
   return (
     <>
-      <div className="flex flex-wrap items-center justify-between gap-2 mb-6">
-        <h1 className="text-xl sm:text-2xl font-semibold text-gray-800">
-          Templates
-        </h1>
-        <Button variant="primary" onClick={() => setShowAddModal(true)}>
-          Add template
-        </Button>
-      </div>
+      {pageHeader}
       {downloadError && (
         <div className="mb-4">
           <ErrorBanner message={downloadError} compact />
         </div>
       )}
+      <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+        {creating
+          ? "Saving template."
+          : downloading
+            ? "Downloading template."
+            : ""}
+      </p>
       {templates.length === 0 ? (
         <Card className="p-8 text-center">
-          <p className="text-muted mb-4">No templates yet.</p>
+          <p className="text-muted mb-4">
+            No templates yet. Add one now to control your generated DOCX style.
+          </p>
           <Button variant="primary" onClick={() => setShowAddModal(true)}>
             Add your first template
           </Button>
         </Card>
       ) : (
-        <div className="space-y-4">
-          {templates.map((template) => (
-            <Card key={template.id} className="p-5">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div>
-                  <div className="font-semibold text-gray-900">{template.name}</div>
-                  <div className="text-muted text-sm mt-1">
-                    {template.description || "—"}
-                  </div>
-                  <div className="text-muted text-xs mt-1 font-mono">
-                    {template.id}
-                  </div>
-                </div>
-                <Button
-                  variant="secondary"
-                  onClick={() => handleDownload(template)}
-                  disabled={downloading}
+        <>
+          <Card className="p-4 mb-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+              <div className="w-full sm:max-w-md">
+                <label
+                  htmlFor="template-search"
+                  className="block text-sm font-medium text-gray-700 mb-1"
                 >
-                  {downloadingId === template.id ? "Downloading…" : "Download"}
-                </Button>
+                  Search templates
+                </label>
+                <input
+                  id="template-search"
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search by name, description, or ID"
+                  className="w-full rounded border border-gray-300 px-3 py-2 text-gray-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                />
               </div>
+              <div className="text-sm text-muted" aria-live="polite">
+                Showing {filteredTemplates.length} of {templates.length} templates
+              </div>
+            </div>
+          </Card>
+
+          {filteredTemplates.length === 0 ? (
+            <Card className="p-8 text-center">
+              <p className="text-muted mb-4">
+                No templates match your search. Try a different term.
+              </p>
+              <Button
+                variant="secondary"
+                onClick={() => setSearchQuery("")}
+                disabled={searchQuery.trim() === ""}
+              >
+                Clear search
+              </Button>
             </Card>
-          ))}
-        </div>
+          ) : (
+            <div className="space-y-4">
+              {filteredTemplates.map((template) => (
+                <Card key={template.id} className="p-5">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="min-w-0">
+                      <div className="font-semibold text-gray-900">
+                        {template.name}
+                      </div>
+                      <p className="text-sm text-gray-700 mt-1">
+                        Use case: {getTemplateUseCase(template)}
+                      </p>
+                      <div className="text-muted text-xs mt-2 font-mono break-all">
+                        {template.id}
+                      </div>
+                    </div>
+                    <Button
+                      variant="secondary"
+                      onClick={() => handleDownload(template)}
+                      disabled={downloading}
+                    >
+                      {downloadingId === template.id ? "Downloading…" : "Download"}
+                    </Button>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          )}
+        </>
       )}
 
       {showAddModal && (
@@ -202,17 +273,25 @@ export default function Templates() {
           onClick={closeAddModal}
         >
           <div
+            ref={modalRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="add-template-title"
+            aria-describedby="add-template-description"
             className="bg-surface rounded-lg shadow-xl max-w-md w-full p-6"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-lg font-semibold text-gray-800 mb-3">
+            <h3 id="add-template-title" className="text-lg font-semibold text-gray-800 mb-3">
               Add template
             </h3>
-            <p className="text-muted text-sm mb-4">
+            <p id="add-template-description" className="text-muted text-sm mb-4">
               Create a template with a name and optional description. The ID is
               generated by the server.
             </p>
-            <form onSubmit={handleAdd}>
+            <form onSubmit={handleAdd} aria-busy={creating}>
+              <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+                {creating ? "Creating template." : ""}
+              </p>
               {createError && (
                 <div className="mb-3">
                   <ErrorBanner message={createError} compact />
@@ -225,6 +304,7 @@ export default function Templates() {
                 Name
               </label>
               <input
+                ref={initialFocusRef}
                 id="template-name"
                 type="text"
                 value={name}

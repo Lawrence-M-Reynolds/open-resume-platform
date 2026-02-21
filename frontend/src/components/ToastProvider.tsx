@@ -46,6 +46,14 @@ function toastIcon(variant: ToastVariant): string {
   return 'i';
 }
 
+function toastAriaRole(variant: ToastVariant): 'status' | 'alert' {
+  return variant === 'error' ? 'alert' : 'status';
+}
+
+function toastAriaLive(variant: ToastVariant): 'polite' | 'assertive' {
+  return variant === 'error' ? 'assertive' : 'polite';
+}
+
 interface ToastViewportProps {
   toasts: ToastItem[];
   onDismiss: (id: string) => void;
@@ -57,7 +65,9 @@ function ToastViewport({ toasts, onDismiss }: ToastViewportProps) {
       {toasts.map((toast) => (
         <div
           key={toast.id}
-          role="status"
+          role={toastAriaRole(toast.variant)}
+          aria-live={toastAriaLive(toast.variant)}
+          aria-atomic="true"
           className={`pointer-events-auto rounded-lg border shadow-lg ring-1 ring-black/5 p-4 ${toastStyle(toast.variant)}`}
           style={{ animation: 'toast-in 220ms ease-out' }}
         >

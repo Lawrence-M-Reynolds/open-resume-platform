@@ -1,6 +1,6 @@
 import type { ResumeFormValues, ResumePayload } from "../types/api";
 import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 import Button from "../components/Button";
 import ErrorBanner from "../components/ErrorBanner";
@@ -15,23 +15,28 @@ import { getErrorMessage } from "../utils/error";
 export default function EditResume() {
   const { id } = useParams();
   const hasResumeId = id != null && id !== "";
-  const navigate = useNavigate();
   const toast = useToast();
   const resumeQuery = useResumeData(hasResumeId ? id : undefined);
   const updateResumeMutation = useUpdateResumeMutation(hasResumeId ? id : undefined);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [saveStatus, setSaveStatus] = useState<string | null>(null);
   const detailPath = id ? resumeDetailPath(id) : APP_PATHS.home;
 
   const handleSubmit = async (values: ResumePayload): Promise<void> => {
     if (!hasResumeId || !id) return;
     setSubmitError(null);
+    setSaveStatus(null);
     try {
       await updateResumeMutation.mutateAsync(values);
+      const savedAt = new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      setSaveStatus(`Saved at ${savedAt}`);
       toast.success({
         title: "Resume updated",
         description: "Your changes were saved.",
       });
-      navigate(resumeDetailPath(id));
     } catch (errorValue) {
       const message = getErrorMessage(errorValue);
       setSubmitError(message);
@@ -103,12 +108,17 @@ export default function EditResume() {
         key={id}
         initialValues={initialValues}
         onSubmit={handleSubmit}
-        submitLabel="Save"
+        submitLabel="Save changes"
         submitLoadingLabel="Saving…"
         cancelTo={detailPath}
-        cancelLabel="Cancel"
+        cancelLabel="Back to resume"
         error={submitError}
         loading={updateResumeMutation.isPending}
+        statusMessage={saveStatus}
+        warnOnUnsavedChanges
+        onDirtyChange={(isDirty) => {
+          if (isDirty) setSaveStatus(null);
+        }}
       />
     </>
   );

@@ -1,5 +1,10 @@
 import { lazy, Suspense } from 'react';
-import { Route, Routes } from 'react-router-dom';
+import {
+  Route,
+  RouterProvider,
+  createBrowserRouter,
+  createRoutesFromElements,
+} from 'react-router-dom';
 import Layout from '../components/Layout';
 import LoadingSkeleton from '../components/LoadingSkeleton';
 import { APP_PATHS } from './paths';
@@ -14,51 +19,53 @@ function RouteFallback() {
   return <LoadingSkeleton count={1} />;
 }
 
+const appRouter = createBrowserRouter(
+  createRoutesFromElements(
+    <Route element={<Layout />}>
+      <Route
+        path={APP_PATHS.home}
+        element={
+          <Suspense fallback={<RouteFallback />}>
+            <DashboardPage />
+          </Suspense>
+        }
+      />
+      <Route
+        path={APP_PATHS.resumeNew}
+        element={
+          <Suspense fallback={<RouteFallback />}>
+            <NewResumePage />
+          </Suspense>
+        }
+      />
+      <Route
+        path={APP_PATHS.resumeDetailPattern}
+        element={
+          <Suspense fallback={<RouteFallback />}>
+            <ResumeDetailPage />
+          </Suspense>
+        }
+      />
+      <Route
+        path={APP_PATHS.resumeEditPattern}
+        element={
+          <Suspense fallback={<RouteFallback />}>
+            <EditResumePage />
+          </Suspense>
+        }
+      />
+      <Route
+        path={APP_PATHS.templates}
+        element={
+          <Suspense fallback={<RouteFallback />}>
+            <TemplatesPage />
+          </Suspense>
+        }
+      />
+    </Route>
+  )
+);
+
 export default function AppRoutes() {
-  return (
-    <Routes>
-      <Route element={<Layout />}>
-        <Route
-          path={APP_PATHS.home}
-          element={
-            <Suspense fallback={<RouteFallback />}>
-              <DashboardPage />
-            </Suspense>
-          }
-        />
-        <Route
-          path={APP_PATHS.resumeNew}
-          element={
-            <Suspense fallback={<RouteFallback />}>
-              <NewResumePage />
-            </Suspense>
-          }
-        />
-        <Route
-          path={APP_PATHS.resumeDetailPattern}
-          element={
-            <Suspense fallback={<RouteFallback />}>
-              <ResumeDetailPage />
-            </Suspense>
-          }
-        />
-        <Route
-          path={APP_PATHS.resumeEditPattern}
-          element={
-            <Suspense fallback={<RouteFallback />}>
-              <EditResumePage />
-            </Suspense>
-          }
-        />
-        <Route
-          path={APP_PATHS.templates}
-          element={
-            <Suspense fallback={<RouteFallback />}>
-              <TemplatesPage />
-            </Suspense>
-          }
-        />
-      </Route>
-    </Routes>
-  );
+  return <RouterProvider router={appRouter} />;
 }

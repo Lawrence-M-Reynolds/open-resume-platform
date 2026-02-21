@@ -33,12 +33,31 @@ export default function Dashboard() {
     });
   };
 
+  const pageHeader = (
+    <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <h1 className="text-xl sm:text-2xl font-semibold text-gray-800">
+          Resumes
+        </h1>
+        <p className="text-sm text-muted mt-1">
+          Create a resume, choose a template, and generate DOCX.
+        </p>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        <Button to={APP_PATHS.resumeNew} variant="primary">
+          Create resume
+        </Button>
+        <Button to={APP_PATHS.templates} variant="secondary">
+          Manage templates
+        </Button>
+      </div>
+    </div>
+  );
+
   if (resumesQuery.isPending) {
     return (
       <div>
-        <h1 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-6">
-          Resumes
-        </h1>
+        {pageHeader}
         <LoadingSkeleton />
       </div>
     );
@@ -47,9 +66,7 @@ export default function Dashboard() {
   if (resumesQuery.isError) {
     return (
       <div>
-        <h1 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-6">
-          Resumes
-        </h1>
+        {pageHeader}
         <ErrorBanner
           message={getErrorMessage(resumesQuery.error)}
           action={
@@ -69,17 +86,12 @@ export default function Dashboard() {
 
   return (
     <>
-      <div className="flex flex-wrap items-center justify-between gap-2 mb-6">
-        <h1 className="text-xl sm:text-2xl font-semibold text-gray-800">
-          Resumes
-        </h1>
-        <Button to={APP_PATHS.resumeNew} variant="primary">
-          Create resume
-        </Button>
-      </div>
+      {pageHeader}
       {resumes.length === 0 ? (
         <Card className="p-8 text-center">
-          <p className="text-muted mb-4">No resumes yet.</p>
+          <p className="text-muted mb-4">
+            No resumes yet. Create your first resume to start generating DOCX.
+          </p>
           <Button to={APP_PATHS.resumeNew} variant="primary">
             Create your first resume
           </Button>
