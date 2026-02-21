@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { createResume } from '../api/resumes.js';
+import Button from '../components/Button.jsx';
 import ErrorBanner from '../components/ErrorBanner.jsx';
 import PageHeader from '../components/PageHeader.jsx';
 
@@ -134,19 +135,16 @@ export default function NewResume() {
         </div>
 
         <div className="flex gap-3 pt-2">
-          <button
+          <Button
             type="submit"
+            variant="primary"
             disabled={!valid || loading}
-            className="px-4 py-2 bg-primary text-white rounded font-medium hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
           >
             {loading ? 'Creating…' : 'Create resume'}
-          </button>
-          <Link
-            to="/"
-            className="px-4 py-2 border border-gray-300 rounded font-medium text-gray-700 hover:bg-gray-50 transition-colors duration-200"
-          >
+          </Button>
+          <Button to="/" variant="secondary">
             Cancel
-          </Link>
+          </Button>
         </div>
       </form>
     </div>

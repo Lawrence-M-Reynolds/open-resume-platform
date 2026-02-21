@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { getResume, generateDocx } from '../api/resumes.js';
 import { formatDate } from '../utils/date.js';
 import { downloadBlob } from '../utils/download.js';
 import { slugify } from '../utils/slug.js';
+import Button from '../components/Button.jsx';
 import ErrorBanner from '../components/ErrorBanner.jsx';
 import LoadingSkeleton from '../components/LoadingSkeleton.jsx';
 import PageHeader from '../components/PageHeader.jsx';
@@ -62,12 +63,9 @@ export default function ResumeDetail() {
         <ErrorBanner
           message={error}
           action={
-            <Link
-              to="/"
-              className="inline-block px-4 py-2 bg-primary text-white rounded font-medium hover:bg-primary-dark transition-colors duration-200"
-            >
+            <Button to="/" variant="primary" className="inline-block">
               Back to list
-            </Link>
+            </Button>
           }
         />
       </div>
@@ -76,20 +74,16 @@ export default function ResumeDetail() {
 
   const headerActions = (
     <>
-      <button
-        type="button"
+      <Button
+        variant="secondary"
         onClick={handleDownload}
         disabled={downloading}
-        className="px-4 py-2 border border-gray-300 rounded font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
       >
         {downloading ? 'Downloading…' : 'Download DOCX'}
-      </button>
-      <Link
-        to={`/resumes/${resume.id}/edit`}
-        className="px-4 py-2 bg-primary text-white rounded font-medium hover:bg-primary-dark transition-colors duration-200"
-      >
+      </Button>
+      <Button to={`/resumes/${resume.id}/edit`} variant="primary">
         Edit
-      </Link>
+      </Button>
     </>
   );
 
