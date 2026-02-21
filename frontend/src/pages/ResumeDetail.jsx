@@ -23,6 +23,7 @@ export default function ResumeDetail() {
   const [variantLabel, setVariantLabel] = useState('');
   const [creatingVariant, setCreatingVariant] = useState(false);
   const [variantError, setVariantError] = useState(null);
+  const [downloadingVersionId, setDownloadingVersionId] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -83,6 +84,21 @@ export default function ResumeDetail() {
     }
   };
 
+  const handleDownloadVersion = async (version) => {
+    setDownloadingVersionId(version.id);
+    setDownloadError(null);
+    try {
+      const blob = await generateDocx(id, { versionId: version.id });
+      const baseName = slugify(resume.title);
+      const fileName = `${baseName}-v${version.versionNo}.docx`;
+      downloadBlob(blob, fileName);
+    } catch (e) {
+      setDownloadError(e.message);
+    } finally {
+      setDownloadingVersionId(null);
+    }
+  };
+
   if (loading) {
     return (
       <div>
@@ -119,7 +135,7 @@ export default function ResumeDetail() {
       <Button
         variant="secondary"
         onClick={handleDownload}
-        disabled={downloading}
+        disabled={downloading || downloadingVersionId != null}
       >
         {downloading ? 'Downloading…' : 'Download DOCX'}
       </Button>
@@ -184,10 +200,17 @@ export default function ResumeDetail() {
           ) : (
             <ul className="space-y-3">
               {versions.map((v) => (
-                <li key={v.id} className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+                <li key={v.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
                   <span className="font-medium text-gray-900">v{v.versionNo}</span>
                   <span className="text-gray-600">{v.label || '—'}</span>
                   <span className="text-muted">{formatDate(v.createdAt)}</span>
+                  <Button
+                    variant="secondary"
+                    onClick={() => handleDownloadVersion(v)}
+                    disabled={downloadingVersionId != null}
+                  >
+                    {downloadingVersionId === v.id ? 'Downloading…' : 'Generate DOCX'}
+                  </Button>
                 </li>
               ))}
             </ul>

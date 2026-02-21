@@ -53,9 +53,12 @@ export async function updateResume(id, body) {
   return handleResponse(response);
 }
 
-export async function generateDocx(id) {
+export async function generateDocx(id, options = {}) {
+  const { versionId } = options;
+  const body = versionId != null && versionId !== '' ? { versionId } : undefined;
   const response = await fetch(`${BASE}/${id}/generate`, {
     method: 'POST',
+    ...(body != null && { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }),
   });
   return handleResponse(response, { expectJson: false });
 }
