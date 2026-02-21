@@ -6,6 +6,7 @@ import com.reynolds.open_resume_platform.documents.repository.InMemoryGeneratedD
 import com.reynolds.open_resume_platform.resumes.command.CreateResumeCommand;
 import com.reynolds.open_resume_platform.resumes.command.CreateResumeVersionCommand;
 import com.reynolds.open_resume_platform.resumes.domain.Resume;
+import com.reynolds.open_resume_platform.resumes.domain.ResumeSection;
 import com.reynolds.open_resume_platform.resumes.domain.ResumeVersion;
 import com.reynolds.open_resume_platform.resumes.repository.InMemoryResumeRepository;
 import com.reynolds.open_resume_platform.resumes.repository.InMemoryResumeVersionRepository;
@@ -17,7 +18,9 @@ import com.reynolds.open_resume_platform.service.DocumentGeneratorGatewayService
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -34,12 +37,13 @@ class ResumeDocxServiceTest {
     private ResumeVersionService resumeVersionService;
     private DocumentGeneratorGatewayService documentGeneratorGatewayService;
     private GeneratedDocumentRepository generatedDocumentRepository;
+    private SectionRepository sectionRepository;
 
     @BeforeEach
     void setUp() {
         ResumeRepository resumeRepository = new InMemoryResumeRepository();
         ResumeVersionRepository versionRepository = new InMemoryResumeVersionRepository();
-        SectionRepository sectionRepository = new InMemorySectionRepository();
+        sectionRepository = new InMemorySectionRepository();
         ResumeMarkdownAssembler markdownAssembler = new ResumeMarkdownAssembler(resumeRepository, sectionRepository);
         generatedDocumentRepository = new InMemoryGeneratedDocumentRepository();
         resumeService = new ResumeServiceImpl(resumeRepository);
@@ -128,5 +132,39 @@ class ResumeDocxServiceTest {
         Optional<GenerateDocxResponse> result = docxService.generate(resumeB.id(), versionA.id(), null);
 
         assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void generate_whenResumeHasSections_usesAssembledMarkdown() {
+        Resume resume = resumeService.create(new CreateResumeCommand(
+                "My Resume", null, null, "t1", "# Legacy"
+        ));
+        Instant now = Instant.now();
+        sectionRepository.save(new ResumeSection(
+                UUID.randomUUID().toString(),
+                resume.id(),
+                "Profile",
+                "Profile content",
+                1,
+                now,
+                now
+        ));
+        sectionRepository.save(new ResumeSection(
+                UUID.randomUUID().toString(),
+                resume.id(),
+                "Skills",
+                "Skills content",
+                2,
+                now,
+                now
+        ));
+        String assembled = "## Profile\n\nProfile content\n\n## Skills\n\nSkills content";
+        when(documentGeneratorGatewayService.createCv(eq("t1"), eq(assembled))).thenReturn(new byte[]{10, 11});
+
+        Optional<GenerateDocxResponse> result = docxService.generate(resume.id(), null, null);
+
+        assertTrue(result.isPresent());
+        verify(documentGeneratorGatewayService).createCv(eq("t1"), eq(assembled));
+        assertArrayEquals(new byte[]{10, 11}, generatedDocumentRepository.getContent(result.get().documentId()).orElseThrow());
     }
 }
