@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { listResumes } from '../api/resumes.js';
+import ErrorBanner from '../components/ErrorBanner.jsx';
 import LoadingSkeleton from '../components/LoadingSkeleton.jsx';
 import { formatDate } from '../utils/date.js';
 
@@ -43,16 +44,18 @@ export default function Dashboard() {
         <h1 className="text-2xl font-semibold text-gray-800 mb-6">
           Resumes
         </h1>
-        <div className="bg-error/10 border border-error/30 text-error rounded-lg p-4">
-          <p>{error}</p>
-          <button
-            type="button"
-            onClick={load}
-            className="mt-3 px-4 py-2 bg-error text-white rounded font-medium hover:opacity-90"
-          >
-            Retry
-          </button>
-        </div>
+        <ErrorBanner
+          message={error}
+          action={
+            <button
+              type="button"
+              onClick={load}
+              className="px-4 py-2 bg-error text-white rounded font-medium hover:opacity-90"
+            >
+              Retry
+            </button>
+          }
+        />
       </div>
     );
   }

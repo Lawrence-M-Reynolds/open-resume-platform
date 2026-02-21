@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getResume, updateResume } from '../api/resumes.js';
+import ErrorBanner from '../components/ErrorBanner.jsx';
 
 const MIN_TITLE_LENGTH = 3;
 
@@ -93,15 +94,17 @@ export default function EditResume() {
             ← Resumes
           </Link>
         </div>
-        <div className="bg-error/10 border border-error/30 text-error rounded-lg p-4">
-          <p>{error}</p>
-          <Link
-            to="/"
-            className="inline-block mt-3 px-4 py-2 bg-primary text-white rounded font-medium hover:bg-primary-dark transition-colors duration-200"
-          >
-            Back to list
-          </Link>
-        </div>
+        <ErrorBanner
+          message={error}
+          action={
+            <Link
+              to="/"
+              className="inline-block px-4 py-2 bg-primary text-white rounded font-medium hover:bg-primary-dark transition-colors duration-200"
+            >
+              Back to list
+            </Link>
+          }
+        />
       </div>
     );
   }
@@ -122,11 +125,7 @@ export default function EditResume() {
         onSubmit={handleSubmit}
         className="bg-surface rounded-lg border border-gray-200 shadow-sm p-6 space-y-4 max-w-2xl"
       >
-        {error && (
-          <div className="bg-error/10 border border-error/30 text-error rounded-lg p-3 text-sm">
-            {error}
-          </div>
-        )}
+        {error && <ErrorBanner message={error} compact />}
 
         <div>
           <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">

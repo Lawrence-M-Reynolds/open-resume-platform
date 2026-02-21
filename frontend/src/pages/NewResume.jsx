@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { createResume } from '../api/resumes.js';
+import ErrorBanner from '../components/ErrorBanner.jsx';
 
 const MIN_TITLE_LENGTH = 3;
 
@@ -57,11 +58,7 @@ export default function NewResume() {
         onSubmit={handleSubmit}
         className="bg-surface rounded-lg border border-gray-200 shadow-sm p-6 space-y-4 max-w-2xl"
       >
-        {error && (
-          <div className="bg-error/10 border border-error/30 text-error rounded-lg p-3 text-sm">
-            {error}
-          </div>
-        )}
+        {error && <ErrorBanner message={error} compact />}
 
         <div>
           <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
