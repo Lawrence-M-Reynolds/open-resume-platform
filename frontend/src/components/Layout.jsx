@@ -11,12 +11,18 @@ export default function Layout() {
           >
             Open Resume
           </Link>
-          <nav>
+          <nav className="flex items-center gap-1">
             <Link
               to="/"
               className="inline-block py-2 px-3 text-muted hover:text-primary transition-colors duration-200 font-medium min-h-[44px] flex items-center"
             >
               Resumes
+            </Link>
+            <Link
+              to="/templates"
+              className="inline-block py-2 px-3 text-muted hover:text-primary transition-colors duration-200 font-medium min-h-[44px] flex items-center"
+            >
+              Templates
             </Link>
           </nav>
         </div>
