@@ -3,8 +3,11 @@ import Card from "../components/Card";
 import ErrorBanner from "../components/ErrorBanner";
 import { Link } from "react-router-dom";
 import LoadingSkeleton from "../components/LoadingSkeleton";
+import { useQueries } from "@tanstack/react-query";
 import { useToast } from "../components/ToastProvider";
+import { listSections } from "../api/resumes";
 import { useResumesData } from "../hooks/useResumesData";
+import { queryKeys } from "../query/keys";
 import { APP_PATHS, resumeDetailPath } from "../routes/paths";
 import { formatDate } from "../utils/date";
 import { getErrorMessage } from "../utils/error";
@@ -13,6 +16,14 @@ export default function Dashboard() {
   const toast = useToast();
   const resumesQuery = useResumesData();
   const resumes = resumesQuery.data ?? [];
+  const sectionsQueries = useQueries({
+    queries: resumes.map((resume) => ({
+      queryKey: queryKeys.resumeSections(resume.id),
+      queryFn: () => listSections(resume.id),
+      enabled: resumesQuery.isSuccess,
+      staleTime: 60_000,
+    })),
+  });
 
   const handleRetry = async (): Promise<void> => {
     toast.info({
@@ -98,27 +109,38 @@ export default function Dashboard() {
         </Card>
       ) : (
         <div className="space-y-4">
-          {resumes.map((resume) => (
-            <Card
-              key={resume.id}
-              className="p-0 transition-all duration-200 ease-out hover:shadow-md hover:-translate-y-0.5 hover:border-primary-light"
-            >
-              <Link
-                to={resumeDetailPath(resume.id)}
-                className="block p-5 no-underline text-inherit min-w-0"
+          {resumes.map((resume, index) => {
+            const sectionQuery = sectionsQueries[index];
+            const sectionCount = sectionQuery?.data?.length;
+            const sectionsLabel = sectionQuery?.isPending
+              ? "Sections loading…"
+              : sectionQuery?.isError
+                ? "Sections unavailable"
+                : `Sections ${sectionCount ?? 0}`;
+
+            return (
+              <Card
+                key={resume.id}
+                className="p-0 transition-all duration-200 ease-out hover:shadow-md hover:-translate-y-0.5 hover:border-primary-light"
               >
-                <div className="font-semibold text-gray-900 break-words">
-                  {resume.title}
-                </div>
-                <div className="text-muted text-sm mt-1">
-                  {resume.targetRole || "—"}
-                </div>
-                <div className="text-muted text-sm mt-1">
-                  Updated {formatDate(resume.updatedAt)}
-                </div>
-              </Link>
-            </Card>
-          ))}
+                <Link
+                  to={resumeDetailPath(resume.id)}
+                  className="block p-5 no-underline text-inherit min-w-0"
+                >
+                  <div className="font-semibold text-gray-900 break-words">
+                    {resume.title}
+                  </div>
+                  <div className="text-muted text-sm mt-1">
+                    {resume.targetRole || "—"}
+                  </div>
+                  <div className="text-muted text-sm mt-1">{sectionsLabel}</div>
+                  <div className="text-muted text-sm mt-1">
+                    Updated {formatDate(resume.updatedAt)}
+                  </div>
+                </Link>
+              </Card>
+            );
+          })}
         </div>
       )}
     </>

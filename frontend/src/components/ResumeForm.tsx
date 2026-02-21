@@ -25,6 +25,8 @@ interface ResumeFormProps {
   warnOnUnsavedChanges?: boolean;
   unsavedChangesMessage?: string;
   onDirtyChange?: (isDirty: boolean) => void;
+  allowEmptyMarkdown?: boolean;
+  showMarkdownField?: boolean;
 }
 
 export default function ResumeForm({
@@ -41,6 +43,8 @@ export default function ResumeForm({
   warnOnUnsavedChanges = false,
   unsavedChangesMessage,
   onDirtyChange,
+  allowEmptyMarkdown = false,
+  showMarkdownField = true,
 }: ResumeFormProps) {
   const [title, setTitle] = useState(initialValues.title ?? '');
   const [targetRole, setTargetRole] = useState(initialValues.targetRole ?? '');
@@ -65,14 +69,15 @@ export default function ResumeForm({
   const titleTrimmed = title.trim();
   const markdownTrimmed = markdown.trim();
   const titleValid = titleTrimmed.length >= MIN_TITLE_LENGTH;
-  const markdownValid = markdownTrimmed.length > 0;
+  const markdownValid =
+    !showMarkdownField || allowEmptyMarkdown || markdownTrimmed.length > 0;
   const valid = titleValid && markdownValid;
   const isDirty =
     title !== (initialValues.title ?? '') ||
     targetRole !== (initialValues.targetRole ?? '') ||
     targetCompany !== (initialValues.targetCompany ?? '') ||
     templateId !== (initialValues.templateId ?? '') ||
-    markdown !== (initialValues.markdown ?? '');
+    (showMarkdownField && markdown !== (initialValues.markdown ?? ''));
 
   useUnsavedChangesWarning(
     warnOnUnsavedChanges && isDirty && !loading,
@@ -182,38 +187,41 @@ export default function ResumeForm({
           />
         </div>
 
-        <div>
-          <div className="flex items-center justify-between gap-2 mb-1">
-            <label htmlFor="resume-form-markdown" className={labelClass}>
-              Content (Markdown) *
-            </label>
-            {showMarkdownStarter && (
-              <button
-                type="button"
-                onClick={handleInsertStarterMarkdown}
-                className="text-sm font-medium text-primary hover:text-primary-dark transition-colors duration-200"
-              >
-                Insert starter markdown
-              </button>
+        {showMarkdownField && (
+          <div>
+            <div className="flex items-center justify-between gap-2 mb-1">
+              <label htmlFor="resume-form-markdown" className={labelClass}>
+                Content (Markdown){allowEmptyMarkdown ? '' : ' *'}
+              </label>
+              {showMarkdownStarter && (
+                <button
+                  type="button"
+                  onClick={handleInsertStarterMarkdown}
+                  className="text-sm font-medium text-primary hover:text-primary-dark transition-colors duration-200"
+                >
+                  Insert starter markdown
+                </button>
+              )}
+            </div>
+            <p className="text-xs text-muted mb-2">
+              {allowEmptyMarkdown
+                ? 'Optional fallback content. If sections are provided, section markdown is used for generation.'
+                : 'Required. Use headings such as Summary, Experience, Skills, and Education.'}
+            </p>
+            <textarea
+              id="resume-form-markdown"
+              value={markdown}
+              onChange={(e) => setMarkdown(e.target.value)}
+              rows={12}
+              className={`${inputClass} font-mono sm:text-sm`}
+              placeholder="# Your resume in Markdown..."
+              required={!allowEmptyMarkdown}
+            />
+            {markdown.length > 0 && !markdownValid && (
+              <p className="text-error text-sm mt-1">Content is required</p>
             )}
           </div>
-          <p className="text-xs text-muted mb-2">
-            Required. Use headings such as Summary, Experience, Skills, and
-            Education.
-          </p>
-          <textarea
-            id="resume-form-markdown"
-            value={markdown}
-            onChange={(e) => setMarkdown(e.target.value)}
-            rows={12}
-            className={`${inputClass} font-mono sm:text-sm`}
-            placeholder="# Your resume in Markdown..."
-            required
-          />
-          {markdown.length > 0 && !markdownValid && (
-            <p className="text-error text-sm mt-1">Content is required</p>
-          )}
-        </div>
+        )}
 
         <div className="pt-2 space-y-2">
           <div className="flex flex-wrap gap-3">

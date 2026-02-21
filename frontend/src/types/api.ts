@@ -25,6 +25,39 @@ export interface Resume {
   createdAt?: string;
 }
 
+export interface ResumeSection {
+  id: string;
+  resumeId: string;
+  title: string;
+  markdown: string;
+  order: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SectionVersion {
+  id: string;
+  sectionId: string;
+  versionNo: number;
+  markdown: string;
+  createdAt: string;
+}
+
+export interface CreateSectionPayload {
+  title: string;
+  markdown: string;
+  order?: number;
+}
+
+export interface UpdateSectionPayload {
+  title: string;
+  markdown: string;
+}
+
+export interface ReorderSectionsPayload {
+  sectionIds: string[];
+}
+
 export interface ResumeVersion {
   id: string;
   versionNo: number;

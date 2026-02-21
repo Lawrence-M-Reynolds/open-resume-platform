@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { listTemplates } from '../api/templates';
-import { getResume, listDocuments, listVersions } from '../api/resumes';
+import { getResume, listDocuments, listSections, listVersions } from '../api/resumes';
 import { queryKeys } from '../query/keys';
 
 export function useResumeDetailData(resumeId?: string) {
@@ -26,6 +26,16 @@ export function useResumeDetailData(resumeId?: string) {
     enabled,
   });
 
+  const sectionsQuery = useQuery({
+    queryKey: queryKeys.resumeSections(resumeId ?? ''),
+    queryFn: async () => {
+      const id = resumeId;
+      if (!id) return [];
+      return listSections(id);
+    },
+    enabled,
+  });
+
   const documentsQuery = useQuery({
     queryKey: queryKeys.resumeDocuments(resumeId ?? ''),
     queryFn: async () => {
@@ -44,6 +54,7 @@ export function useResumeDetailData(resumeId?: string) {
 
   return {
     resumeQuery,
+    sectionsQuery,
     versionsQuery,
     documentsQuery,
     templatesQuery,
