@@ -1,5 +1,9 @@
 package com.reynolds.open_resume_platform.resumes.service;
 
+import com.reynolds.open_resume_platform.resumes.command.CreateResumeCommand;
+import com.reynolds.open_resume_platform.resumes.domain.Resume;
+import com.reynolds.open_resume_platform.resumes.repository.InMemoryResumeRepository;
+import com.reynolds.open_resume_platform.resumes.repository.ResumeRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -9,17 +13,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-/**
- * Defines behaviour for a future ResumeService.
- * Uses minimal inner types so tests compile; production classes are not implemented yet.
- */
 class ResumeServiceTest {
 
     private ResumeService service;
 
     @BeforeEach
     void setUp() {
-        service = new StubResumeService();
+        ResumeRepository repository = new InMemoryResumeRepository();
+        service = new ResumeServiceImpl(repository);
     }
 
     @Test
@@ -86,36 +87,5 @@ class ResumeServiceTest {
 
         assertEquals("Trimmed Title", resume.title());
         assertEquals("# Section\n\nContent", resume.markdown());
-    }
-
-    // --- Inner types: contracts for future production code (test-only for now) ---
-
-    record CreateResumeCommand(String title, String targetRole, String targetCompany, String templateId, String markdown) {}
-
-    record Resume(
-            String id,
-            Resume.Status status,
-            int latestVersionNo,
-            Instant createdAt,
-            Instant updatedAt,
-            String title,
-            String targetRole,
-            String targetCompany,
-            String templateId,
-            String markdown
-    ) {
-        enum Status { DRAFT }
-    }
-
-    interface ResumeService {
-        Resume create(CreateResumeCommand command);
-    }
-
-    /** Stub so tests compile and fail until production implementation exists. */
-    static final class StubResumeService implements ResumeService {
-        @Override
-        public Resume create(CreateResumeCommand command) {
-            throw new UnsupportedOperationException("Not implemented");
-        }
     }
 }
