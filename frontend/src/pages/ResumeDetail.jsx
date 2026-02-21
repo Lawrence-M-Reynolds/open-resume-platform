@@ -4,6 +4,7 @@ import { getResume, generateDocx } from '../api/resumes.js';
 import { formatDate } from '../utils/date.js';
 import { downloadBlob } from '../utils/download.js';
 import { slugify } from '../utils/slug.js';
+import ErrorBanner from '../components/ErrorBanner.jsx';
 import LoadingSkeleton from '../components/LoadingSkeleton.jsx';
 
 export default function ResumeDetail() {
@@ -71,15 +72,17 @@ export default function ResumeDetail() {
             ← Resumes
           </Link>
         </div>
-        <div className="bg-error/10 border border-error/30 text-error rounded-lg p-4">
-          <p>{error}</p>
-          <Link
-            to="/"
-            className="inline-block mt-3 px-4 py-2 bg-primary text-white rounded font-medium hover:bg-primary-dark transition-colors duration-200"
-          >
-            Back to list
-          </Link>
-        </div>
+        <ErrorBanner
+          message={error}
+          action={
+            <Link
+              to="/"
+              className="inline-block px-4 py-2 bg-primary text-white rounded font-medium hover:bg-primary-dark transition-colors duration-200"
+            >
+              Back to list
+            </Link>
+          }
+        />
       </div>
     );
   }
@@ -115,8 +118,8 @@ export default function ResumeDetail() {
       </div>
 
       {downloadError && (
-        <div className="mb-4 bg-error/10 border border-error/30 text-error rounded-lg p-3 text-sm">
-          {downloadError}
+        <div className="mb-4">
+          <ErrorBanner message={downloadError} compact />
         </div>
       )}
 
