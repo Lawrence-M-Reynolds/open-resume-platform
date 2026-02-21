@@ -9,15 +9,15 @@ const config: Config = {
     extend: {
       colors: {
         primary: {
-          DEFAULT: '#1e40af',
-          light: '#dbeafe',
-          dark: '#1e3a8a',
+          DEFAULT: 'rgb(var(--color-primary) / <alpha-value>)',
+          light: 'rgb(var(--color-primary-light) / <alpha-value>)',
+          dark: 'rgb(var(--color-primary-dark) / <alpha-value>)',
         },
-        surface: '#ffffff',
-        background: '#f8fafc',
-        muted: '#64748b',
-        success: '#16a34a',
-        error: '#dc2626',
+        surface: 'rgb(var(--color-surface) / <alpha-value>)',
+        background: 'rgb(var(--color-background) / <alpha-value>)',
+        muted: 'rgb(var(--color-muted) / <alpha-value>)',
+        success: 'rgb(var(--color-success) / <alpha-value>)',
+        error: 'rgb(var(--color-error) / <alpha-value>)',
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],

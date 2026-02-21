@@ -1,6 +1,7 @@
 import { Link, Outlet, useLocation } from "react-router-dom";
 
 import { APP_PATHS } from "../routes/paths";
+import ThemeSettingsButton from "./ThemeSettingsButton";
 
 export default function Layout() {
   const location = useLocation();
@@ -16,14 +17,19 @@ export default function Layout() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <header className="bg-surface border-b border-gray-200 shadow-sm">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-2">
+        <div className="max-w-4xl mx-auto px-4 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <Link
             to={APP_PATHS.home}
-            className="text-lg sm:text-xl font-semibold text-primary hover:text-primary-dark transition-colors duration-200 shrink-0"
+            className="inline-flex items-center gap-2 text-lg sm:text-xl font-semibold text-primary hover:text-primary-dark transition-colors duration-200 shrink-0"
           >
+            <img
+              src="/logo.svg"
+              alt="Open Resume logo"
+              className="h-8 w-8 rounded-md"
+            />
             Open Resume
           </Link>
-          <nav className="flex items-center gap-1">
+          <nav className="w-full sm:w-auto flex flex-wrap items-center gap-1">
             <Link
               to={APP_PATHS.home}
               className={navItemClass(isResumesActive)}
@@ -38,6 +44,7 @@ export default function Layout() {
             >
               Templates
             </Link>
+            <ThemeSettingsButton className={navItemClass(false)} />
           </nav>
         </div>
       </header>

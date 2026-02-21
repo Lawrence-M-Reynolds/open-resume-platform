@@ -43,11 +43,11 @@ export default function Dashboard() {
           Create a resume, choose a template, and generate DOCX.
         </p>
       </div>
-      <div className="flex flex-wrap gap-2">
-        <Button to={APP_PATHS.resumeNew} variant="primary">
+      <div className="flex w-full sm:w-auto flex-col sm:flex-row flex-wrap gap-2">
+        <Button to={APP_PATHS.resumeNew} variant="primary" className="w-full sm:w-auto">
           Create resume
         </Button>
-        <Button to={APP_PATHS.templates} variant="secondary">
+        <Button to={APP_PATHS.templates} variant="secondary" className="w-full sm:w-auto">
           Manage templates
         </Button>
       </div>
@@ -88,7 +88,7 @@ export default function Dashboard() {
     <>
       {pageHeader}
       {resumes.length === 0 ? (
-        <Card className="p-8 text-center">
+        <Card className="p-6 sm:p-8 text-center">
           <p className="text-muted mb-4">
             No resumes yet. Create your first resume to start generating DOCX.
           </p>
@@ -105,9 +105,9 @@ export default function Dashboard() {
             >
               <Link
                 to={resumeDetailPath(resume.id)}
-                className="block p-5 no-underline text-inherit"
+                className="block p-5 no-underline text-inherit min-w-0"
               >
-                <div className="font-semibold text-gray-900">
+                <div className="font-semibold text-gray-900 break-words">
                   {resume.title}
                 </div>
                 <div className="text-muted text-sm mt-1">

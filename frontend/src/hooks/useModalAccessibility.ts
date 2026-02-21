@@ -15,13 +15,13 @@ interface UseModalAccessibilityOptions {
   onClose: () => void;
 }
 
-export function useModalAccessibility({
+export function useModalAccessibility<TInitial extends HTMLElement = HTMLInputElement>({
   open,
   allowClose,
   onClose,
 }: UseModalAccessibilityOptions) {
   const modalRef = useRef<HTMLDivElement | null>(null);
-  const initialFocusRef = useRef<HTMLInputElement | null>(null);
+  const initialFocusRef = useRef<TInitial | null>(null);
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
   const allowCloseRef = useRef(allowClose);
   const onCloseRef = useRef(onClose);

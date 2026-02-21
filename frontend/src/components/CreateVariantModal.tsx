@@ -32,7 +32,7 @@ export default function CreateVariantModal({
 
   return (
     <div
-      className="fixed inset-0 z-10 flex items-center justify-center bg-black/50 p-4"
+      className="fixed inset-0 z-50 flex items-start sm:items-center justify-center bg-black/50 p-4 overflow-y-auto"
       onClick={() => !creating && onClose()}
     >
       <div
@@ -41,7 +41,7 @@ export default function CreateVariantModal({
         aria-modal="true"
         aria-labelledby="create-variant-title"
         aria-describedby="create-variant-description"
-        className="bg-surface rounded-lg shadow-xl max-w-md w-full p-6"
+        className="bg-surface rounded-lg shadow-xl max-w-md w-full max-h-[calc(100vh-2rem)] overflow-y-auto p-5 sm:p-6"
         onClick={(e) => e.stopPropagation()}
       >
         <h3 id="create-variant-title" className="text-lg font-semibold text-gray-800 mb-3">
@@ -68,14 +68,25 @@ export default function CreateVariantModal({
             type="text"
             value={label}
             onChange={(e) => onLabelChange(e.target.value)}
-            className="w-full rounded border border-gray-300 px-3 py-2 text-gray-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary mb-4"
+            className="w-full rounded border border-gray-300 px-3 py-2 text-base text-gray-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary mb-4"
             placeholder="e.g. For Acme"
           />
-          <div className="flex gap-2 justify-end">
-            <Button type="button" variant="secondary" onClick={onClose} disabled={creating}>
+          <div className="flex flex-col-reverse sm:flex-row gap-2 justify-end">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={onClose}
+              disabled={creating}
+              className="w-full sm:w-auto"
+            >
               Cancel
             </Button>
-            <Button type="submit" variant="primary" disabled={creating}>
+            <Button
+              type="submit"
+              variant="primary"
+              disabled={creating}
+              className="w-full sm:w-auto"
+            >
               {creating ? 'Creating…' : 'Create'}
             </Button>
           </div>

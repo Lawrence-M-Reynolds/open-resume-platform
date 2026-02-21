@@ -137,7 +137,11 @@ export default function Templates() {
           Templates control DOCX layout and styling.
         </p>
       </div>
-      <Button variant="primary" onClick={() => setShowAddModal(true)}>
+      <Button
+        variant="primary"
+        onClick={() => setShowAddModal(true)}
+        className="w-full sm:w-auto"
+      >
         Add template
       </Button>
     </div>
@@ -189,7 +193,7 @@ export default function Templates() {
             : ""}
       </p>
       {templates.length === 0 ? (
-        <Card className="p-8 text-center">
+        <Card className="p-6 sm:p-8 text-center">
           <p className="text-muted mb-4">
             No templates yet. Add one now to control your generated DOCX style.
           </p>
@@ -217,7 +221,7 @@ export default function Templates() {
                   className="w-full rounded border border-gray-300 px-3 py-2 text-gray-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                 />
               </div>
-              <div className="text-sm text-muted" aria-live="polite">
+              <div className="text-sm text-muted sm:text-right" aria-live="polite">
                 Showing {filteredTemplates.length} of {templates.length} templates
               </div>
             </div>
@@ -256,6 +260,7 @@ export default function Templates() {
                       variant="secondary"
                       onClick={() => handleDownload(template)}
                       disabled={downloading}
+                      className="w-full sm:w-auto"
                     >
                       {downloadingId === template.id ? "Downloading…" : "Download"}
                     </Button>
@@ -269,7 +274,7 @@ export default function Templates() {
 
       {showAddModal && (
         <div
-          className="fixed inset-0 z-10 flex items-center justify-center bg-black/50 p-4"
+          className="fixed inset-0 z-50 flex items-start sm:items-center justify-center bg-black/50 p-4 overflow-y-auto"
           onClick={closeAddModal}
         >
           <div
@@ -278,7 +283,7 @@ export default function Templates() {
             aria-modal="true"
             aria-labelledby="add-template-title"
             aria-describedby="add-template-description"
-            className="bg-surface rounded-lg shadow-xl max-w-md w-full p-6"
+            className="bg-surface rounded-lg shadow-xl max-w-md w-full max-h-[calc(100vh-2rem)] overflow-y-auto p-5 sm:p-6"
             onClick={(e) => e.stopPropagation()}
           >
             <h3 id="add-template-title" className="text-lg font-semibold text-gray-800 mb-3">
@@ -309,7 +314,7 @@ export default function Templates() {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full rounded border border-gray-300 px-3 py-2 text-gray-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary mb-4"
+                className="w-full rounded border border-gray-300 px-3 py-2 text-base text-gray-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary mb-4"
                 placeholder="e.g. Banking – Conservative"
                 required
               />
@@ -324,15 +329,16 @@ export default function Templates() {
                 type="text"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full rounded border border-gray-300 px-3 py-2 text-gray-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary mb-4"
+                className="w-full rounded border border-gray-300 px-3 py-2 text-base text-gray-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary mb-4"
                 placeholder="e.g. Formal layout for banking roles"
               />
-              <div className="flex gap-2 justify-end">
+              <div className="flex flex-col-reverse sm:flex-row gap-2 justify-end">
                 <Button
                   type="button"
                   variant="secondary"
                   onClick={closeAddModal}
                   disabled={creating}
+                  className="w-full sm:w-auto"
                 >
                   Cancel
                 </Button>
@@ -340,6 +346,7 @@ export default function Templates() {
                   type="submit"
                   variant="primary"
                   disabled={creating || !name.trim()}
+                  className="w-full sm:w-auto"
                 >
                   {creating ? "Creating…" : "Create"}
                 </Button>

@@ -61,7 +61,7 @@ interface ToastViewportProps {
 
 function ToastViewport({ toasts, onDismiss }: ToastViewportProps) {
   return (
-    <div className="fixed top-4 right-4 z-50 w-full max-w-sm space-y-3 px-4 sm:px-0 pointer-events-none">
+    <div className="fixed top-4 inset-x-0 z-50 mx-auto w-[calc(100%-1rem)] max-w-sm space-y-3 pointer-events-none sm:inset-x-auto sm:right-4 sm:mx-0 sm:w-full">
       {toasts.map((toast) => (
         <div
           key={toast.id}

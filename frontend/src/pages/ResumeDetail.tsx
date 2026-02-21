@@ -402,10 +402,14 @@ export default function ResumeDetail() {
 
   const headerActions = (
     <>
-      <Button to={resumeEditPath(resume.id)} variant="secondary">
+      <Button to={resumeEditPath(resume.id)} variant="secondary" className="w-full sm:w-auto">
         Edit Resume
       </Button>
-      <Button variant="secondary" onClick={() => setShowCreateVariant(true)}>
+      <Button
+        variant="secondary"
+        onClick={() => setShowCreateVariant(true)}
+        className="w-full sm:w-auto"
+      >
         Create Client Variant
       </Button>
     </>
@@ -475,7 +479,7 @@ export default function ResumeDetail() {
                 value={selectedTemplateId}
                 onChange={(e) => setSelectedTemplateId(e.target.value)}
                 disabled={loadingTemplates}
-                className="w-full rounded border border-gray-300 px-3 py-2 text-gray-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full rounded border border-gray-300 px-3 py-2 text-base text-gray-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
               >
                 <option value="">Use resume / version default</option>
                 {templates.map((template) => (
@@ -522,7 +526,7 @@ export default function ResumeDetail() {
               Selected Template State
             </p>
             <p className="text-sm font-medium text-gray-900 mt-2">
-              {activeTemplateLabel}
+              <span className="break-words">{activeTemplateLabel}</span>
             </p>
             <p className="text-xs text-muted mt-1">{activeTemplateSource}</p>
             <p className="text-xs text-muted mt-1">
@@ -668,6 +672,7 @@ export default function ResumeDetail() {
                         variant="secondary"
                         onClick={() => handleDownloadDocument(document)}
                         disabled={downloadingDocumentId != null}
+                        className="w-full sm:w-auto"
                       >
                         {downloadingDocumentId === document.id
                           ? "Downloading…"

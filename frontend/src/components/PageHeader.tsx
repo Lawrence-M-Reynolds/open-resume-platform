@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom';
 import type { ReactNode } from 'react';
 
-const linkClass = 'text-muted hover:text-primary transition-colors duration-200 text-sm font-medium';
+const linkClass =
+  'text-muted hover:text-primary transition-colors duration-200 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded px-1';
 
 interface PageHeaderProps {
   backTo: string;
@@ -29,7 +30,9 @@ export default function PageHeader({
         )}
       </div>
       {actions != null && (
-        <div className="flex flex-wrap gap-2 shrink-0">{actions}</div>
+        <div className="flex flex-col sm:flex-row flex-wrap gap-2 w-full sm:w-auto shrink-0">
+          {actions}
+        </div>
       )}
     </div>
   );

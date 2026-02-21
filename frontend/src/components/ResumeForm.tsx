@@ -8,7 +8,7 @@ import Card from './Card';
 import ErrorBanner from './ErrorBanner';
 
 const inputClass =
-  'w-full rounded border border-gray-300 px-3 py-2 text-gray-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary';
+  'w-full rounded border border-gray-300 px-3 py-2 text-base text-gray-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary';
 const labelClass = 'block text-sm font-medium text-gray-700 mb-1';
 
 interface ResumeFormProps {
@@ -101,7 +101,7 @@ export default function ResumeForm({
   };
 
   return (
-    <Card className="p-6 space-y-4 max-w-2xl">
+    <Card className="p-5 sm:p-6 space-y-4 max-w-2xl">
       <form onSubmit={handleSubmit} className="space-y-4" aria-busy={loading}>
         <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">
           {loading ? submitLoadingLabel : ""}
@@ -206,7 +206,7 @@ export default function ResumeForm({
             value={markdown}
             onChange={(e) => setMarkdown(e.target.value)}
             rows={12}
-            className={`${inputClass} font-mono text-sm`}
+            className={`${inputClass} font-mono sm:text-sm`}
             placeholder="# Your resume in Markdown..."
             required
           />
