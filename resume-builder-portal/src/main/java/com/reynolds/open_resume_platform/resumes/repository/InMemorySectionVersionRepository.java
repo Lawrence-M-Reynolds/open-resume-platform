@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -18,6 +19,11 @@ public class InMemorySectionVersionRepository implements SectionVersionRepositor
     public SectionVersion save(SectionVersion version) {
         store.put(version.id(), version);
         return version;
+    }
+
+    @Override
+    public Optional<SectionVersion> findById(String id) {
+        return Optional.ofNullable(store.get(id));
     }
 
     @Override
