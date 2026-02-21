@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Base64;
 import java.util.List;
+import java.util.Objects;
 
 @Tag(name = "Templates", description = "List and create DOCX templates")
 @RestController
@@ -70,11 +71,12 @@ public class TemplateController {
     })
     @GetMapping("/{id}/download")
     public ResponseEntity<byte[]> download(@PathVariable String id) {
-        if (!"default-template".equals(id)) {
+        MockData.CvTemplateDoc cvTemplateDoc = MockData.CvTemplateDoc.getByTemplateId(id);
+        if (Objects.isNull(cvTemplateDoc)) {
             return ResponseEntity.notFound().build();
         }
-        String base64 = MockData.getReferenceDoc();
-        byte[] bytes = Base64.getDecoder().decode(base64);
+
+        byte[] bytes = Base64.getDecoder().decode(cvTemplateDoc.getBase64Encoding());
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.wordprocessingml.document"))
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"open-resume-template.docx\"")

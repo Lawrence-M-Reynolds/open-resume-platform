@@ -51,6 +51,6 @@ public class CvGenerationRestController {
 	}
 
 	private String getBase64TemplateVal(String templateId) {
-		return MockData.getReferenceDoc();
+		return MockData.CvTemplateDoc.getByTemplateId(templateId).getBase64Encoding();
 	}
 }
