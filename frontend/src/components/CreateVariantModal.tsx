@@ -1,6 +1,7 @@
 import type { FormEventHandler } from 'react';
 import Button from './Button';
 import ErrorBanner from './ErrorBanner';
+import { useModalAccessibility } from '../hooks/useModalAccessibility';
 
 interface CreateVariantModalProps {
   open: boolean;
@@ -21,6 +22,12 @@ export default function CreateVariantModal({
   onClose,
   onSubmit,
 }: CreateVariantModalProps) {
+  const { modalRef, initialFocusRef } = useModalAccessibility({
+    open,
+    allowClose: !creating,
+    onClose,
+  });
+
   if (!open) return null;
 
   return (
@@ -29,14 +36,24 @@ export default function CreateVariantModal({
       onClick={() => !creating && onClose()}
     >
       <div
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="create-variant-title"
+        aria-describedby="create-variant-description"
         className="bg-surface rounded-lg shadow-xl max-w-md w-full p-6"
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 className="text-lg font-semibold text-gray-800 mb-3">Create Client Variant</h3>
-        <p className="text-muted text-sm mb-4">
+        <h3 id="create-variant-title" className="text-lg font-semibold text-gray-800 mb-3">
+          Create Client Variant
+        </h3>
+        <p id="create-variant-description" className="text-muted text-sm mb-4">
           Snapshot the current resume. Optionally add a label (e.g. &quot;For Acme&quot;).
         </p>
-        <form onSubmit={onSubmit}>
+        <form onSubmit={onSubmit} aria-busy={creating}>
+          <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+            {creating ? "Creating client variant." : ""}
+          </p>
           {error && (
             <div className="mb-3">
               <ErrorBanner message={error} compact />
@@ -46,6 +63,7 @@ export default function CreateVariantModal({
             Label (optional)
           </label>
           <input
+            ref={initialFocusRef}
             id="variant-label"
             type="text"
             value={label}

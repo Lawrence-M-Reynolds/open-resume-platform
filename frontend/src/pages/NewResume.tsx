@@ -1,5 +1,6 @@
 import type { ResumeFormValues, ResumePayload } from "../types/api";
 
+import Card from "../components/Card";
 import PageHeader from "../components/PageHeader";
 import ResumeForm from "../components/ResumeForm";
 import { useToast } from "../components/ToastProvider";
@@ -45,6 +46,12 @@ export default function NewResume() {
   return (
     <>
       <PageHeader backTo={APP_PATHS.home} backLabel="← Resumes" title="New resume" />
+      <Card className="p-4 mb-4 max-w-2xl">
+        <p className="text-sm text-muted">
+          Start with structured markdown sections. Template ID is optional, and
+          you can choose or change the template later before generating DOCX.
+        </p>
+      </Card>
       <ResumeForm
         initialValues={EMPTY_VALUES}
         onSubmit={handleSubmit}
@@ -54,6 +61,7 @@ export default function NewResume() {
         cancelLabel="Cancel"
         error={error}
         loading={createResumeMutation.isPending}
+        showMarkdownStarter
       />
     </>
   );

@@ -1,8 +1,18 @@
-import { Link, Outlet } from "react-router-dom";
+import { Link, Outlet, useLocation } from "react-router-dom";
 
 import { APP_PATHS } from "../routes/paths";
 
 export default function Layout() {
+  const location = useLocation();
+  const isTemplatesActive = location.pathname.startsWith(APP_PATHS.templates);
+  const isResumesActive = !isTemplatesActive;
+  const navItemBaseClass =
+    "inline-block py-2 px-3 transition-colors duration-200 font-medium min-h-[44px] flex items-center rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2";
+  const navItemClass = (active: boolean) =>
+    active
+      ? `${navItemBaseClass} text-primary bg-gray-100`
+      : `${navItemBaseClass} text-muted hover:text-primary`;
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <header className="bg-surface border-b border-gray-200 shadow-sm">
@@ -16,13 +26,15 @@ export default function Layout() {
           <nav className="flex items-center gap-1">
             <Link
               to={APP_PATHS.home}
-              className="inline-block py-2 px-3 text-muted hover:text-primary transition-colors duration-200 font-medium min-h-[44px] flex items-center"
+              className={navItemClass(isResumesActive)}
+              aria-current={isResumesActive ? "page" : undefined}
             >
               Resumes
             </Link>
             <Link
               to={APP_PATHS.templates}
-              className="inline-block py-2 px-3 text-muted hover:text-primary transition-colors duration-200 font-medium min-h-[44px] flex items-center"
+              className={navItemClass(isTemplatesActive)}
+              aria-current={isTemplatesActive ? "page" : undefined}
             >
               Templates
             </Link>
