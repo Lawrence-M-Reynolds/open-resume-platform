@@ -1,185 +1,162 @@
+import { APP_PATHS, resumeEditPath } from "../routes/paths";
 import type {
   GenerateDocxOptions,
-  Resume,
   ResumeDocument,
   ResumeVersion,
-  Template,
 } from "../types/api";
 import {
-  createVersion,
-  fetchDocumentBlob,
-  generateDocx,
-  getResume,
-  listDocuments,
-  listVersions,
-} from "../api/resumes";
-import { useEffect, useState } from "react";
+  useCreateResumeVersionMutation,
+  useGenerateResumeDocxMutation,
+} from "../hooks/useResumeDetailMutations";
 
 import Button from "../components/Button";
 import Card from "../components/Card";
+import CreateVariantModal from "../components/CreateVariantModal";
 import ErrorBanner from "../components/ErrorBanner";
 import type { FormEvent } from "react";
 import LoadingSkeleton from "../components/LoadingSkeleton";
 import PageHeader from "../components/PageHeader";
+import { useToast } from "../components/ToastProvider";
 import { downloadBlob } from "../utils/download";
+import { fetchDocumentBlob } from "../api/resumes";
 import { formatDate } from "../utils/date";
 import { getErrorMessage } from "../utils/error";
-import { listTemplates } from "../api/templates";
 import { slugify } from "../utils/slug";
 import { useParams } from "react-router-dom";
+import { useResumeDetailData } from "../hooks/useResumeDetailData";
+import { useState } from "react";
 
 export default function ResumeDetail() {
   const { id } = useParams();
-  const [resume, setResume] = useState<Resume | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [downloading, setDownloading] = useState(false);
-  const [downloadError, setDownloadError] = useState<string | null>(null);
-  const [versions, setVersions] = useState<ResumeVersion[]>([]);
-  const [loadingVersions, setLoadingVersions] = useState(false);
+  const resumeId = id ?? "";
+  const hasResumeId = resumeId !== "";
+  const toast = useToast();
+
+  const { resumeQuery, versionsQuery, documentsQuery, templatesQuery } =
+    useResumeDetailData(hasResumeId ? resumeId : undefined);
+
+  const createVariantMutation = useCreateResumeVersionMutation(
+    hasResumeId ? resumeId : undefined,
+  );
+  const generateDocxMutation = useGenerateResumeDocxMutation(
+    hasResumeId ? resumeId : undefined,
+  );
+
   const [showCreateVariant, setShowCreateVariant] = useState(false);
   const [variantLabel, setVariantLabel] = useState("");
-  const [creatingVariant, setCreatingVariant] = useState(false);
   const [variantError, setVariantError] = useState<string | null>(null);
+  const [selectedTemplateId, setSelectedTemplateId] = useState("");
+  const [downloadError, setDownloadError] = useState<string | null>(null);
   const [downloadingVersionId, setDownloadingVersionId] = useState<
     string | null
   >(null);
-  const [templates, setTemplates] = useState<Template[]>([]);
-  const [selectedTemplateId, setSelectedTemplateId] = useState("");
-  const [loadingTemplates, setLoadingTemplates] = useState(false);
-  const [documents, setDocuments] = useState<ResumeDocument[]>([]);
-  const [loadingDocuments, setLoadingDocuments] = useState(false);
   const [downloadingDocumentId, setDownloadingDocumentId] = useState<
     string | null
   >(null);
 
-  useEffect(() => {
-    if (!id) {
-      setError("Missing resume id");
-      setLoading(false);
-      return;
-    }
+  const resume = resumeQuery.data ?? null;
+  const versions = versionsQuery.data ?? [];
+  const documents = documentsQuery.data ?? [];
+  const templates = templatesQuery.data ?? [];
 
-    let cancelled = false;
-    setLoading(true);
-    setError(null);
-    getResume(id)
-      .then((data) => {
-        if (!cancelled) setResume(data);
-      })
-      .catch((errorValue: unknown) => {
-        if (!cancelled) setError(getErrorMessage(errorValue));
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [id]);
+  const loadingVersions = versionsQuery.isPending;
+  const loadingDocuments = documentsQuery.isPending;
+  const loadingTemplates = templatesQuery.isPending;
+  const creatingVariant = createVariantMutation.isPending;
+  const generatingDocx = generateDocxMutation.isPending;
+  const downloadingCurrent = generatingDocx && downloadingVersionId == null;
 
-  const loadVersions = (): void => {
-    if (!id) {
-      setVersions([]);
-      return;
-    }
-    setLoadingVersions(true);
-    listVersions(id)
-      .then((data) => setVersions(data))
-      .catch(() => setVersions([]))
-      .finally(() => setLoadingVersions(false));
+  const closeCreateVariantModal = (): void => {
+    if (creatingVariant) return;
+    setShowCreateVariant(false);
+    setVariantError(null);
+    setVariantLabel("");
   };
-
-  useEffect(() => {
-    if (!resume) return;
-    loadVersions();
-  }, [resume?.id]);
-
-  const loadDocuments = (): void => {
-    if (!id) {
-      setDocuments([]);
-      return;
-    }
-    setLoadingDocuments(true);
-    listDocuments(id)
-      .then((data) => setDocuments(data))
-      .catch(() => setDocuments([]))
-      .finally(() => setLoadingDocuments(false));
-  };
-
-  useEffect(() => {
-    if (!resume) return;
-    loadDocuments();
-  }, [resume?.id]);
-
-  useEffect(() => {
-    setLoadingTemplates(true);
-    listTemplates()
-      .then((data) => setTemplates(data))
-      .catch(() => setTemplates([]))
-      .finally(() => setLoadingTemplates(false));
-  }, []);
 
   const handleCreateVariant = async (
     e: FormEvent<HTMLFormElement>,
   ): Promise<void> => {
     e.preventDefault();
-    if (!id) return;
+    if (!hasResumeId || creatingVariant) return;
 
-    setCreatingVariant(true);
     setVariantError(null);
     try {
-      await createVersion(id, { label: variantLabel.trim() || undefined });
-      setShowCreateVariant(false);
-      setVariantLabel("");
-      loadVersions();
+      await createVariantMutation.mutateAsync({
+        label: variantLabel.trim() || undefined,
+      });
+      toast.success({
+        title: "Client variant created",
+        description: "New snapshot added to variants.",
+      });
+      closeCreateVariantModal();
     } catch (errorValue) {
-      setVariantError(getErrorMessage(errorValue));
-    } finally {
-      setCreatingVariant(false);
+      const message = getErrorMessage(errorValue);
+      setVariantError(message);
+      toast.error({
+        title: "Couldn't create client variant",
+        description: message,
+      });
     }
   };
 
   const buildGenerateOptions = (versionId?: string): GenerateDocxOptions => {
-    const opts: GenerateDocxOptions = {};
-    if (versionId != null && versionId !== "") opts.versionId = versionId;
+    const options: GenerateDocxOptions = {};
+    if (versionId != null && versionId !== "") options.versionId = versionId;
     if (selectedTemplateId != null && selectedTemplateId !== "") {
-      opts.templateId = selectedTemplateId;
+      options.templateId = selectedTemplateId;
     }
-    return opts;
+    return options;
   };
 
   const handleDownload = async (): Promise<void> => {
-    if (!id || !resume) return;
+    if (!hasResumeId || !resume || generatingDocx) return;
 
-    setDownloading(true);
     setDownloadError(null);
     try {
-      const blob = await generateDocx(id, buildGenerateOptions());
-      downloadBlob(blob, `${slugify(resume.title)}.docx`);
-      loadDocuments();
+      const blob = await generateDocxMutation.mutateAsync(
+        buildGenerateOptions(),
+      );
+      const fileName = `${slugify(resume.title)}.docx`;
+      downloadBlob(blob, fileName);
+      toast.success({
+        title: "DOCX generated",
+        description: `${fileName} was downloaded.`,
+      });
     } catch (errorValue) {
-      setDownloadError(getErrorMessage(errorValue));
-    } finally {
-      setDownloading(false);
+      const message = getErrorMessage(errorValue);
+      setDownloadError(message);
+      toast.error({
+        title: "DOCX generation failed",
+        description: message,
+      });
     }
   };
 
   const handleDownloadVersion = async (
     version: ResumeVersion,
   ): Promise<void> => {
-    if (!id || !resume) return;
+    if (!hasResumeId || !resume || generatingDocx) return;
 
     setDownloadingVersionId(version.id);
     setDownloadError(null);
     try {
-      const blob = await generateDocx(id, buildGenerateOptions(version.id));
+      const blob = await generateDocxMutation.mutateAsync(
+        buildGenerateOptions(version.id),
+      );
       const baseName = slugify(resume.title);
       const fileName = `${baseName}-v${version.versionNo}.docx`;
       downloadBlob(blob, fileName);
-      loadDocuments();
+      toast.success({
+        title: `Version v${version.versionNo} generated`,
+        description: `${fileName} was downloaded.`,
+      });
     } catch (errorValue) {
-      setDownloadError(getErrorMessage(errorValue));
+      const message = getErrorMessage(errorValue);
+      setDownloadError(message);
+      toast.error({
+        title: "Version DOCX generation failed",
+        description: message,
+      });
     } finally {
       setDownloadingVersionId(null);
     }
@@ -197,30 +174,63 @@ export default function ResumeDetail() {
       const baseName = slugify(resume.title);
       const fileName = `${baseName}-${document.id.slice(0, 8)}.docx`;
       downloadBlob(blob, fileName);
+      toast.success({
+        title: "File downloaded",
+        description: `${fileName} was downloaded.`,
+      });
     } catch (errorValue) {
-      setDownloadError(getErrorMessage(errorValue));
+      const message = getErrorMessage(errorValue);
+      setDownloadError(message);
+      toast.error({
+        title: "File download failed",
+        description: message,
+      });
     } finally {
       setDownloadingDocumentId(null);
     }
   };
 
-  if (loading) {
+  if (!hasResumeId) {
     return (
       <div>
-        <PageHeader backTo="/" backLabel="← Resumes" />
+        <PageHeader backTo={APP_PATHS.home} backLabel="← Resumes" />
+        <ErrorBanner
+          message="Missing resume id"
+          action={
+            <Button
+              to={APP_PATHS.home}
+              variant="primary"
+              className="inline-block"
+            >
+              Back to list
+            </Button>
+          }
+        />
+      </div>
+    );
+  }
+
+  if (resumeQuery.isPending) {
+    return (
+      <div>
+        <PageHeader backTo={APP_PATHS.home} backLabel="← Resumes" />
         <LoadingSkeleton count={1} />
       </div>
     );
   }
 
-  if (error) {
+  if (resumeQuery.isError) {
     return (
       <div>
-        <PageHeader backTo="/" backLabel="← Resumes" />
+        <PageHeader backTo={APP_PATHS.home} backLabel="← Resumes" />
         <ErrorBanner
-          message={error}
+          message={getErrorMessage(resumeQuery.error)}
           action={
-            <Button to="/" variant="primary" className="inline-block">
+            <Button
+              to={APP_PATHS.home}
+              variant="primary"
+              className="inline-block"
+            >
               Back to list
             </Button>
           }
@@ -232,11 +242,15 @@ export default function ResumeDetail() {
   if (!resume) {
     return (
       <div>
-        <PageHeader backTo="/" backLabel="← Resumes" />
+        <PageHeader backTo={APP_PATHS.home} backLabel="← Resumes" />
         <ErrorBanner
           message="Resume not found"
           action={
-            <Button to="/" variant="primary" className="inline-block">
+            <Button
+              to={APP_PATHS.home}
+              variant="primary"
+              className="inline-block"
+            >
               Back to list
             </Button>
           }
@@ -253,11 +267,11 @@ export default function ResumeDetail() {
       <Button
         variant="secondary"
         onClick={handleDownload}
-        disabled={downloading || downloadingVersionId != null}
+        disabled={generatingDocx}
       >
-        {downloading ? "Downloading…" : "Download DOCX"}
+        {downloadingCurrent ? "Downloading…" : "Download DOCX"}
       </Button>
-      <Button to={`/resumes/${resume.id}/edit`} variant="primary">
+      <Button to={resumeEditPath(resume.id)} variant="primary">
         Edit
       </Button>
     </>
@@ -266,18 +280,16 @@ export default function ResumeDetail() {
   return (
     <>
       <PageHeader
-        backTo="/"
+        backTo={APP_PATHS.home}
         backLabel="← Resumes"
         title={resume.title}
         actions={headerActions}
       />
-
       {downloadError && (
         <div className="mb-4">
           <ErrorBanner message={downloadError} compact />
         </div>
       )}
-
       <div className="mb-4 max-w-3xl">
         <label
           htmlFor="template-select"
@@ -300,7 +312,6 @@ export default function ResumeDetail() {
           ))}
         </select>
       </div>
-
       <Card className="p-6 space-y-4 max-w-3xl">
         <div>
           <span className="text-sm font-medium text-gray-500">Target role</span>
@@ -329,7 +340,6 @@ export default function ResumeDetail() {
           </pre>
         </div>
       </Card>
-
       <div className="mt-8 max-w-3xl">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-lg font-semibold text-gray-800">
@@ -367,7 +377,7 @@ export default function ResumeDetail() {
                   <Button
                     variant="secondary"
                     onClick={() => handleDownloadVersion(version)}
-                    disabled={downloadingVersionId != null}
+                    disabled={generatingDocx}
                   >
                     {downloadingVersionId === version.id
                       ? "Downloading…"
@@ -379,7 +389,6 @@ export default function ResumeDetail() {
           )}
         </Card>
       </div>
-
       <div className="mt-8 max-w-3xl">
         <h2 className="text-lg font-semibold text-gray-800 mb-3">
           Generated files
@@ -420,68 +429,15 @@ export default function ResumeDetail() {
           )}
         </Card>
       </div>
-
-      {showCreateVariant && (
-        <div
-          className="fixed inset-0 z-10 flex items-center justify-center bg-black/50 p-4"
-          onClick={() => !creatingVariant && setShowCreateVariant(false)}
-        >
-          <div
-            className="bg-surface rounded-lg shadow-xl max-w-md w-full p-6"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="text-lg font-semibold text-gray-800 mb-3">
-              Create Client Variant
-            </h3>
-            <p className="text-muted text-sm mb-4">
-              Snapshot the current resume. Optionally add a label (e.g.
-              &quot;For Acme&quot;).
-            </p>
-            <form onSubmit={handleCreateVariant}>
-              {variantError && (
-                <div className="mb-3">
-                  <ErrorBanner message={variantError} compact />
-                </div>
-              )}
-              <label
-                htmlFor="variant-label"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Label (optional)
-              </label>
-              <input
-                id="variant-label"
-                type="text"
-                value={variantLabel}
-                onChange={(e) => setVariantLabel(e.target.value)}
-                className="w-full rounded border border-gray-300 px-3 py-2 text-gray-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary mb-4"
-                placeholder="e.g. For Acme"
-              />
-              <div className="flex gap-2 justify-end">
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={() => {
-                    setShowCreateVariant(false);
-                    setVariantError(null);
-                    setVariantLabel("");
-                  }}
-                  disabled={creatingVariant}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  variant="primary"
-                  disabled={creatingVariant}
-                >
-                  {creatingVariant ? "Creating…" : "Create"}
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <CreateVariantModal
+        open={showCreateVariant}
+        label={variantLabel}
+        creating={creatingVariant}
+        error={variantError}
+        onLabelChange={setVariantLabel}
+        onClose={closeCreateVariantModal}
+        onSubmit={handleCreateVariant}
+      />
     </>
   );
 }

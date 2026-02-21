@@ -1,9 +1,12 @@
+const dateFormatter = new Intl.DateTimeFormat(undefined, {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+});
+
 export function formatDate(isoString: string | null | undefined): string {
   if (!isoString) return '—';
-  const d = new Date(isoString);
-  return d.toLocaleDateString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
+  const date = new Date(isoString);
+  if (Number.isNaN(date.getTime())) return '—';
+  return dateFormatter.format(date);
 }

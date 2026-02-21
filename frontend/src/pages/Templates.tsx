@@ -1,88 +1,119 @@
-import {
-  createTemplate,
-  fetchTemplateBlob,
-  listTemplates,
-} from "../api/templates";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import type { FormEvent } from "react";
 
 import Button from "../components/Button";
 import Card from "../components/Card";
 import ErrorBanner from "../components/ErrorBanner";
-import type { FormEvent } from "react";
 import LoadingSkeleton from "../components/LoadingSkeleton";
+import { useToast } from "../components/ToastProvider";
+import { useTemplatesData } from "../hooks/useTemplatesData";
+import {
+  useCreateTemplateMutation,
+  useDownloadTemplateMutation,
+} from "../hooks/useTemplatesMutations";
 import type { Template } from "../types/api";
 import { downloadBlob } from "../utils/download";
 import { getErrorMessage } from "../utils/error";
 
 export default function Templates() {
-  const [templates, setTemplates] = useState<Template[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const toast = useToast();
+  const templatesQuery = useTemplatesData();
+  const createTemplateMutation = useCreateTemplateMutation();
+  const downloadTemplateMutation = useDownloadTemplateMutation();
+
   const [showAddModal, setShowAddModal] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [downloadError, setDownloadError] = useState<string | null>(null);
 
-  const load = async (): Promise<void> => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await listTemplates();
-      setTemplates(data);
-    } catch (errorValue) {
-      setError(getErrorMessage(errorValue));
-    } finally {
-      setLoading(false);
+  const templates = templatesQuery.data ?? [];
+  const creating = createTemplateMutation.isPending;
+  const downloading = downloadTemplateMutation.isPending;
+
+  const handleRetry = async (): Promise<void> => {
+    toast.info({
+      title: "Retrying templates",
+      description: "Fetching latest template list.",
+    });
+    const result = await templatesQuery.refetch();
+    if (result.error) {
+      toast.error({
+        title: "Couldn't refresh templates",
+        description: getErrorMessage(result.error),
+      });
+      return;
     }
+    toast.success({
+      title: "Templates refreshed",
+      description: "Latest template data loaded.",
+    });
   };
 
-  useEffect(() => {
-    load();
-  }, []);
+  const closeAddModal = (): void => {
+    if (creating) return;
+    setShowAddModal(false);
+    setCreateError(null);
+    setName("");
+    setDescription("");
+  };
 
   const handleAdd = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
     const trimmedName = name.trim();
-    if (!trimmedName) return;
-    setCreating(true);
+    if (!trimmedName || creating) return;
+
     setCreateError(null);
     try {
-      await createTemplate({
+      await createTemplateMutation.mutateAsync({
         name: trimmedName,
         description: description.trim() || undefined,
       });
-      setShowAddModal(false);
-      setName("");
-      setDescription("");
-      load();
+      toast.success({
+        title: "Template added",
+        description: `"${trimmedName}" is now available for generation.`,
+      });
+      closeAddModal();
     } catch (errorValue) {
-      setCreateError(getErrorMessage(errorValue));
-    } finally {
-      setCreating(false);
+      const message = getErrorMessage(errorValue);
+      setCreateError(message);
+      toast.error({
+        title: "Couldn't add template",
+        description: message,
+      });
     }
   };
 
   const handleDownload = async (template: Template): Promise<void> => {
+    if (downloading) return;
+
     setDownloadingId(template.id);
     setDownloadError(null);
     try {
-      const blob = await fetchTemplateBlob(template.id);
+      const blob = await downloadTemplateMutation.mutateAsync(template.id);
       const filename =
         template.id === "default-template"
           ? "open-resume-template.docx"
           : `${template.id}.docx`;
       downloadBlob(blob, filename);
+      toast.success({
+        title: "Template download ready",
+        description: `${filename} was downloaded.`,
+      });
     } catch (errorValue) {
-      setDownloadError(getErrorMessage(errorValue));
+      const message = getErrorMessage(errorValue);
+      setDownloadError(message);
+      toast.error({
+        title: "Template download failed",
+        description: message,
+      });
     } finally {
       setDownloadingId(null);
     }
   };
 
-  if (loading) {
+  if (templatesQuery.isPending) {
     return (
       <div>
         <h1 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-6">
@@ -93,16 +124,21 @@ export default function Templates() {
     );
   }
 
-  if (error) {
+  if (templatesQuery.isError) {
     return (
       <div>
         <h1 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-6">
           Templates
         </h1>
         <ErrorBanner
-          message={error}
+          message={getErrorMessage(templatesQuery.error)}
           action={
-            <Button variant="danger" onClick={load}>
+            <Button
+              variant="danger"
+              onClick={() => {
+                void handleRetry();
+              }}
+            >
               Retry
             </Button>
           }
@@ -135,24 +171,24 @@ export default function Templates() {
         </Card>
       ) : (
         <div className="space-y-4">
-          {templates.map((t) => (
-            <Card key={t.id} className="p-5">
+          {templates.map((template) => (
+            <Card key={template.id} className="p-5">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
-                  <div className="font-semibold text-gray-900">{t.name}</div>
+                  <div className="font-semibold text-gray-900">{template.name}</div>
                   <div className="text-muted text-sm mt-1">
-                    {t.description || "—"}
+                    {template.description || "—"}
                   </div>
                   <div className="text-muted text-xs mt-1 font-mono">
-                    {t.id}
+                    {template.id}
                   </div>
                 </div>
                 <Button
                   variant="secondary"
-                  onClick={() => handleDownload(t)}
-                  disabled={downloadingId != null}
+                  onClick={() => handleDownload(template)}
+                  disabled={downloading}
                 >
-                  {downloadingId === t.id ? "Downloading…" : "Download"}
+                  {downloadingId === template.id ? "Downloading…" : "Download"}
                 </Button>
               </div>
             </Card>
@@ -163,7 +199,7 @@ export default function Templates() {
       {showAddModal && (
         <div
           className="fixed inset-0 z-10 flex items-center justify-center bg-black/50 p-4"
-          onClick={() => !creating && setShowAddModal(false)}
+          onClick={closeAddModal}
         >
           <div
             className="bg-surface rounded-lg shadow-xl max-w-md w-full p-6"
@@ -215,12 +251,7 @@ export default function Templates() {
                 <Button
                   type="button"
                   variant="secondary"
-                  onClick={() => {
-                    setShowAddModal(false);
-                    setCreateError(null);
-                    setName("");
-                    setDescription("");
-                  }}
+                  onClick={closeAddModal}
                   disabled={creating}
                 >
                   Cancel

@@ -1,92 +1,55 @@
 import type { ResumeFormValues, ResumePayload } from "../types/api";
-import { getResume, updateResume } from "../api/resumes";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import Button from "../components/Button";
 import ErrorBanner from "../components/ErrorBanner";
 import PageHeader from "../components/PageHeader";
+import { useResumeData } from "../hooks/useResumeData";
+import { useUpdateResumeMutation } from "../hooks/useResumeMutations";
+import { useToast } from "../components/ToastProvider";
 import ResumeForm from "../components/ResumeForm";
+import { APP_PATHS, resumeDetailPath } from "../routes/paths";
 import { getErrorMessage } from "../utils/error";
 
 export default function EditResume() {
   const { id } = useParams();
+  const hasResumeId = id != null && id !== "";
   const navigate = useNavigate();
-  const [initialValues, setInitialValues] = useState<ResumeFormValues>({
-    title: "",
-    targetRole: "",
-    targetCompany: "",
-    templateId: "",
-    markdown: "",
-  });
-  const [loading, setLoading] = useState(false);
-  const [loadingResume, setLoadingResume] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!id) {
-      setError("Missing resume id");
-      setLoadingResume(false);
-      return;
-    }
-
-    let cancelled = false;
-    setLoadingResume(true);
-    setError(null);
-    getResume(id)
-      .then((data) => {
-        if (!cancelled) {
-          setInitialValues({
-            title: data.title ?? "",
-            targetRole: data.targetRole ?? "",
-            targetCompany: data.targetCompany ?? "",
-            templateId: data.templateId ?? "",
-            markdown: data.markdown ?? "",
-          });
-        }
-      })
-      .catch((errorValue: unknown) => {
-        if (!cancelled) setError(getErrorMessage(errorValue));
-      })
-      .finally(() => {
-        if (!cancelled) setLoadingResume(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [id]);
+  const toast = useToast();
+  const resumeQuery = useResumeData(hasResumeId ? id : undefined);
+  const updateResumeMutation = useUpdateResumeMutation(hasResumeId ? id : undefined);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const detailPath = id ? resumeDetailPath(id) : APP_PATHS.home;
 
   const handleSubmit = async (values: ResumePayload): Promise<void> => {
-    if (!id) return;
-    setLoading(true);
-    setError(null);
+    if (!hasResumeId || !id) return;
+    setSubmitError(null);
     try {
-      await updateResume(id, values);
-      navigate(`/resumes/${id}`);
+      await updateResumeMutation.mutateAsync(values);
+      toast.success({
+        title: "Resume updated",
+        description: "Your changes were saved.",
+      });
+      navigate(resumeDetailPath(id));
     } catch (errorValue) {
-      setError(getErrorMessage(errorValue));
-    } finally {
-      setLoading(false);
+      const message = getErrorMessage(errorValue);
+      setSubmitError(message);
+      toast.error({
+        title: "Couldn't save resume",
+        description: message,
+      });
     }
   };
 
-  if (loadingResume) {
+  if (!hasResumeId) {
     return (
       <>
-        <PageHeader backTo="/" backLabel="← Resumes" />
-        <p className="text-muted">Loading…</p>
-      </>
-    );
-  }
-
-  if (error && !initialValues.title) {
-    return (
-      <>
-        <PageHeader backTo="/" backLabel="← Resumes" />
+        <PageHeader backTo={APP_PATHS.home} backLabel="← Resumes" />
         <ErrorBanner
-          message={error}
+          message="Missing resume id"
           action={
-            <Button to="/" variant="primary" className="inline-block">
+            <Button to={APP_PATHS.home} variant="primary" className="inline-block">
               Back to list
             </Button>
           }
@@ -95,10 +58,44 @@ export default function EditResume() {
     );
   }
 
+  if (resumeQuery.isPending) {
+    return (
+      <>
+        <PageHeader backTo={APP_PATHS.home} backLabel="← Resumes" />
+        <p className="text-muted">Loading…</p>
+      </>
+    );
+  }
+
+  if (resumeQuery.isError) {
+    return (
+      <>
+        <PageHeader backTo={APP_PATHS.home} backLabel="← Resumes" />
+        <ErrorBanner
+          message={getErrorMessage(resumeQuery.error)}
+          action={
+            <Button to={APP_PATHS.home} variant="primary" className="inline-block">
+              Back to list
+            </Button>
+          }
+        />
+      </>
+    );
+  }
+
+  const resume = resumeQuery.data;
+  const initialValues: ResumeFormValues = {
+    title: resume?.title ?? "",
+    targetRole: resume?.targetRole ?? "",
+    targetCompany: resume?.targetCompany ?? "",
+    templateId: resume?.templateId ?? "",
+    markdown: resume?.markdown ?? "",
+  };
+
   return (
     <>
       <PageHeader
-        backTo={`/resumes/${id}`}
+        backTo={detailPath}
         backLabel="← Back to resume"
         title="Edit resume"
       />
@@ -108,10 +105,10 @@ export default function EditResume() {
         onSubmit={handleSubmit}
         submitLabel="Save"
         submitLoadingLabel="Saving…"
-        cancelTo={`/resumes/${id}`}
+        cancelTo={detailPath}
         cancelLabel="Cancel"
-        error={error}
-        loading={loading}
+        error={submitError}
+        loading={updateResumeMutation.isPending}
       />
     </>
   );
