@@ -63,7 +63,27 @@ export async function generateDocx(id, options = {}) {
     method: 'POST',
     ...(hasBody && { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }),
   });
-  return handleResponse(response, { expectJson: false });
+
+  if (!response.ok) {
+    if (response.status === 404) throw new Error('Not found');
+    if (response.status === 400 || response.status === 503) {
+      let message = 'Something went wrong';
+      try {
+        const errBody = await response.json();
+        if (errBody?.message) message = errBody.message;
+        if (errBody?.errors?.length) message = errBody.errors.join(', ');
+      } catch (_) {}
+      throw new Error(message);
+    }
+    throw new Error('Something went wrong');
+  }
+
+  const data = await response.json();
+  const downloadUrl = data.downloadUrl;
+  const fullUrl = downloadUrl.startsWith('http') ? downloadUrl : `${API_BASE_URL}${downloadUrl}`;
+  const downloadResponse = await fetch(fullUrl);
+  if (!downloadResponse.ok) throw new Error('Download failed');
+  return downloadResponse.blob();
 }
 
 export async function listVersions(resumeId) {
