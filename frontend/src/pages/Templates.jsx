@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { listTemplates, createTemplate } from '../api/templates.js';
+import { listTemplates, createTemplate, fetchTemplateBlob } from '../api/templates.js';
+import { downloadBlob } from '../utils/download.js';
 import Button from '../components/Button.jsx';
 import Card from '../components/Card.jsx';
 import ErrorBanner from '../components/ErrorBanner.jsx';
@@ -14,6 +15,8 @@ export default function Templates() {
   const [description, setDescription] = useState('');
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState(null);
+  const [downloadingId, setDownloadingId] = useState(null);
+  const [downloadError, setDownloadError] = useState(null);
 
   const load = async () => {
     setLoading(true);
@@ -51,6 +54,20 @@ export default function Templates() {
     }
   };
 
+  const handleDownload = async (template) => {
+    setDownloadingId(template.id);
+    setDownloadError(null);
+    try {
+      const blob = await fetchTemplateBlob(template.id);
+      const filename = template.id === 'default-template' ? 'open-resume-template.docx' : `${template.id}.docx`;
+      downloadBlob(blob, filename);
+    } catch (e) {
+      setDownloadError(e.message);
+    } finally {
+      setDownloadingId(null);
+    }
+  };
+
   if (loading) {
     return (
       <div>
@@ -84,6 +101,11 @@ export default function Templates() {
           Add template
         </Button>
       </div>
+      {downloadError && (
+        <div className="mb-4">
+          <ErrorBanner message={downloadError} compact />
+        </div>
+      )}
       {templates.length === 0 ? (
         <Card className="p-8 text-center">
           <p className="text-muted mb-4">No templates yet.</p>
@@ -95,9 +117,20 @@ export default function Templates() {
         <div className="space-y-4">
           {templates.map((t) => (
             <Card key={t.id} className="p-5">
-              <div className="font-semibold text-gray-900">{t.name}</div>
-              <div className="text-muted text-sm mt-1">{t.description || '—'}</div>
-              <div className="text-muted text-xs mt-1 font-mono">{t.id}</div>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <div className="font-semibold text-gray-900">{t.name}</div>
+                  <div className="text-muted text-sm mt-1">{t.description || '—'}</div>
+                  <div className="text-muted text-xs mt-1 font-mono">{t.id}</div>
+                </div>
+                <Button
+                  variant="secondary"
+                  onClick={() => handleDownload(t)}
+                  disabled={downloadingId != null}
+                >
+                  {downloadingId === t.id ? 'Downloading…' : 'Download'}
+                </Button>
+              </div>
             </Card>
           ))}
         </div>

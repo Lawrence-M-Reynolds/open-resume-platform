@@ -40,3 +40,14 @@ export async function createTemplate(body) {
   });
   return handleResponse(response);
 }
+
+/**
+ * Fetches the template DOCX file as a blob (for download). Supported for default-template.
+ * @param {string} id - Template id (e.g. "default-template")
+ * @returns {Promise<Blob>}
+ */
+export async function fetchTemplateBlob(id) {
+  const response = await fetch(`${BASE}/${id}/download`);
+  if (!response.ok) throw new Error('Download not available');
+  return response.blob();
+}
