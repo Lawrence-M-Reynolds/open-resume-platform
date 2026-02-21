@@ -1,4 +1,5 @@
 import { Routes, Route } from 'react-router-dom';
+import Layout from './components/Layout.jsx';
 
 function Dashboard() {
   return (
@@ -11,7 +12,9 @@ function Dashboard() {
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<Dashboard />} />
+      <Route element={<Layout />}>
+        <Route path="/" element={<Dashboard />} />
+      </Route>
     </Routes>
   );
 }
