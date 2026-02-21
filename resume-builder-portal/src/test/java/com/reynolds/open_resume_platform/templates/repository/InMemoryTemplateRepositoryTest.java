@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class InMemoryTemplateRepositoryTest {
@@ -18,22 +17,20 @@ class InMemoryTemplateRepositoryTest {
 
         List<Template> all = repo.findAll();
 
-        assertEquals(4, all.size());
+        assertEquals(2, all.size());
         assertTrue(all.stream().anyMatch(t -> "default-template".equals(t.id())));
-        assertTrue(all.stream().anyMatch(t -> "banking-conservative".equals(t.id())));
-        assertTrue(all.stream().anyMatch(t -> "startup-modern".equals(t.id())));
-        assertTrue(all.stream().anyMatch(t -> "public-sector-structured".equals(t.id())));
+        assertTrue(all.stream().anyMatch(t -> "fintech".equals(t.id())));
     }
 
     @Test
     void findById_returnsTemplateWhenExists() {
         InMemoryTemplateRepository repo = new InMemoryTemplateRepository();
 
-        Optional<Template> found = repo.findById("banking-conservative");
+        Optional<Template> found = repo.findById("fintech");
 
         assertTrue(found.isPresent());
-        assertEquals("banking-conservative", found.get().id());
-        assertEquals("Banking - Conservative", found.get().name());
+        assertEquals("fintech", found.get().id());
+        assertEquals("FinTech Resume template", found.get().name());
     }
 
     @Test
@@ -54,6 +51,6 @@ class InMemoryTemplateRepositoryTest {
 
         assertEquals(newTemplate, saved);
         assertTrue(repo.findById("custom-id").isPresent());
-        assertEquals(5, repo.findAll().size());
+        assertEquals(3, repo.findAll().size());
     }
 }

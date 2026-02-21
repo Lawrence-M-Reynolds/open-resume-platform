@@ -1,5 +1,6 @@
 package com.reynolds.open_resume_platform.templates.repository;
 
+import com.reynolds.open_resume_platform.MockData;
 import com.reynolds.open_resume_platform.templates.domain.Template;
 import org.springframework.stereotype.Repository;
 
@@ -14,10 +15,9 @@ public class InMemoryTemplateRepository implements TemplateRepository {
     private final Map<String, Template> store = new ConcurrentHashMap<>();
 
     public InMemoryTemplateRepository() {
-        save(new Template("default-template", "Open Resume template", "Default layout used when no template is selected."));
-        save(new Template("banking-conservative", "Banking - Conservative", "Formal layout suited to banking and finance roles."));
-        save(new Template("startup-modern", "Startup - Modern", "Clean, modern layout for tech and startup roles."));
-        save(new Template("public-sector-structured", "Public Sector - Structured", "Structured layout for public sector and policy roles."));
+        for(MockData.CvTemplateDoc cvTemplateDoc: MockData.CvTemplateDoc.values()) {
+            save(new Template(cvTemplateDoc.getTemplateId(), cvTemplateDoc.getName(), cvTemplateDoc.getDescription()));
+        }
     }
 
     @Override
