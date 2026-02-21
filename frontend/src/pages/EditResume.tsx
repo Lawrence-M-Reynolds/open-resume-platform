@@ -1,26 +1,35 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { getResume, updateResume } from '../api/resumes.js';
-import Button from '../components/Button.jsx';
-import ErrorBanner from '../components/ErrorBanner.jsx';
-import PageHeader from '../components/PageHeader.jsx';
-import ResumeForm from '../components/ResumeForm.jsx';
+import type { ResumeFormValues, ResumePayload } from "../types/api";
+import { getResume, updateResume } from "../api/resumes";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+
+import Button from "../components/Button";
+import ErrorBanner from "../components/ErrorBanner";
+import PageHeader from "../components/PageHeader";
+import ResumeForm from "../components/ResumeForm";
+import { getErrorMessage } from "../utils/error";
 
 export default function EditResume() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [initialValues, setInitialValues] = useState({
-    title: '',
-    targetRole: '',
-    targetCompany: '',
-    templateId: '',
-    markdown: '',
+  const [initialValues, setInitialValues] = useState<ResumeFormValues>({
+    title: "",
+    targetRole: "",
+    targetCompany: "",
+    templateId: "",
+    markdown: "",
   });
   const [loading, setLoading] = useState(false);
   const [loadingResume, setLoadingResume] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!id) {
+      setError("Missing resume id");
+      setLoadingResume(false);
+      return;
+    }
+
     let cancelled = false;
     setLoadingResume(true);
     setError(null);
@@ -28,31 +37,34 @@ export default function EditResume() {
       .then((data) => {
         if (!cancelled) {
           setInitialValues({
-            title: data.title ?? '',
-            targetRole: data.targetRole ?? '',
-            targetCompany: data.targetCompany ?? '',
-            templateId: data.templateId ?? '',
-            markdown: data.markdown ?? '',
+            title: data.title ?? "",
+            targetRole: data.targetRole ?? "",
+            targetCompany: data.targetCompany ?? "",
+            templateId: data.templateId ?? "",
+            markdown: data.markdown ?? "",
           });
         }
       })
-      .catch((e) => {
-        if (!cancelled) setError(e.message);
+      .catch((errorValue: unknown) => {
+        if (!cancelled) setError(getErrorMessage(errorValue));
       })
       .finally(() => {
         if (!cancelled) setLoadingResume(false);
       });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
 
-  const handleSubmit = async (values) => {
+  const handleSubmit = async (values: ResumePayload): Promise<void> => {
+    if (!id) return;
     setLoading(true);
     setError(null);
     try {
       await updateResume(id, values);
       navigate(`/resumes/${id}`);
-    } catch (e) {
-      setError(e.message);
+    } catch (errorValue) {
+      setError(getErrorMessage(errorValue));
     } finally {
       setLoading(false);
     }
@@ -60,16 +72,16 @@ export default function EditResume() {
 
   if (loadingResume) {
     return (
-      <div>
+      <>
         <PageHeader backTo="/" backLabel="← Resumes" />
         <p className="text-muted">Loading…</p>
-      </div>
+      </>
     );
   }
 
   if (error && !initialValues.title) {
     return (
-      <div>
+      <>
         <PageHeader backTo="/" backLabel="← Resumes" />
         <ErrorBanner
           message={error}
@@ -79,12 +91,12 @@ export default function EditResume() {
             </Button>
           }
         />
-      </div>
+      </>
     );
   }
 
   return (
-    <div>
+    <>
       <PageHeader
         backTo={`/resumes/${id}`}
         backLabel="← Back to resume"
@@ -101,6 +113,6 @@ export default function EditResume() {
         error={error}
         loading={loading}
       />
-    </div>
+    </>
   );
 }

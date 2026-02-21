@@ -1,10 +1,10 @@
 import { Routes, Route } from 'react-router-dom';
-import Layout from './components/Layout.jsx';
-import Dashboard from './pages/Dashboard.jsx';
-import NewResume from './pages/NewResume.jsx';
-import ResumeDetail from './pages/ResumeDetail.jsx';
-import EditResume from './pages/EditResume.jsx';
-import Templates from './pages/Templates.jsx';
+import Layout from './components/Layout';
+import Dashboard from './pages/Dashboard';
+import NewResume from './pages/NewResume';
+import ResumeDetail from './pages/ResumeDetail';
+import EditResume from './pages/EditResume';
+import Templates from './pages/Templates';
 
 export default function App() {
   return (

@@ -1,31 +1,39 @@
-import { useState, useEffect } from 'react';
-import { listTemplates, createTemplate, fetchTemplateBlob } from '../api/templates.js';
-import { downloadBlob } from '../utils/download.js';
-import Button from '../components/Button.jsx';
-import Card from '../components/Card.jsx';
-import ErrorBanner from '../components/ErrorBanner.jsx';
-import LoadingSkeleton from '../components/LoadingSkeleton.jsx';
+import {
+  createTemplate,
+  fetchTemplateBlob,
+  listTemplates,
+} from "../api/templates";
+import { useEffect, useState } from "react";
+
+import Button from "../components/Button";
+import Card from "../components/Card";
+import ErrorBanner from "../components/ErrorBanner";
+import type { FormEvent } from "react";
+import LoadingSkeleton from "../components/LoadingSkeleton";
+import type { Template } from "../types/api";
+import { downloadBlob } from "../utils/download";
+import { getErrorMessage } from "../utils/error";
 
 export default function Templates() {
-  const [templates, setTemplates] = useState([]);
+  const [templates, setTemplates] = useState<Template[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
   const [creating, setCreating] = useState(false);
-  const [createError, setCreateError] = useState(null);
-  const [downloadingId, setDownloadingId] = useState(null);
-  const [downloadError, setDownloadError] = useState(null);
+  const [createError, setCreateError] = useState<string | null>(null);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
 
-  const load = async () => {
+  const load = async (): Promise<void> => {
     setLoading(true);
     setError(null);
     try {
       const data = await listTemplates();
       setTemplates(data);
-    } catch (e) {
-      setError(e.message);
+    } catch (errorValue) {
+      setError(getErrorMessage(errorValue));
     } finally {
       setLoading(false);
     }
@@ -35,34 +43,40 @@ export default function Templates() {
     load();
   }, []);
 
-  const handleAdd = async (e) => {
+  const handleAdd = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
     const trimmedName = name.trim();
     if (!trimmedName) return;
     setCreating(true);
     setCreateError(null);
     try {
-      await createTemplate({ name: trimmedName, description: description.trim() || undefined });
+      await createTemplate({
+        name: trimmedName,
+        description: description.trim() || undefined,
+      });
       setShowAddModal(false);
-      setName('');
-      setDescription('');
+      setName("");
+      setDescription("");
       load();
-    } catch (e) {
-      setCreateError(e.message);
+    } catch (errorValue) {
+      setCreateError(getErrorMessage(errorValue));
     } finally {
       setCreating(false);
     }
   };
 
-  const handleDownload = async (template) => {
+  const handleDownload = async (template: Template): Promise<void> => {
     setDownloadingId(template.id);
     setDownloadError(null);
     try {
       const blob = await fetchTemplateBlob(template.id);
-      const filename = template.id === 'default-template' ? 'open-resume-template.docx' : `${template.id}.docx`;
+      const filename =
+        template.id === "default-template"
+          ? "open-resume-template.docx"
+          : `${template.id}.docx`;
       downloadBlob(blob, filename);
-    } catch (e) {
-      setDownloadError(e.message);
+    } catch (errorValue) {
+      setDownloadError(getErrorMessage(errorValue));
     } finally {
       setDownloadingId(null);
     }
@@ -87,16 +101,22 @@ export default function Templates() {
         </h1>
         <ErrorBanner
           message={error}
-          action={<Button variant="danger" onClick={load}>Retry</Button>}
+          action={
+            <Button variant="danger" onClick={load}>
+              Retry
+            </Button>
+          }
         />
       </div>
     );
   }
 
   return (
-    <div>
+    <>
       <div className="flex flex-wrap items-center justify-between gap-2 mb-6">
-        <h1 className="text-xl sm:text-2xl font-semibold text-gray-800">Templates</h1>
+        <h1 className="text-xl sm:text-2xl font-semibold text-gray-800">
+          Templates
+        </h1>
         <Button variant="primary" onClick={() => setShowAddModal(true)}>
           Add template
         </Button>
@@ -120,15 +140,19 @@ export default function Templates() {
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
                   <div className="font-semibold text-gray-900">{t.name}</div>
-                  <div className="text-muted text-sm mt-1">{t.description || '—'}</div>
-                  <div className="text-muted text-xs mt-1 font-mono">{t.id}</div>
+                  <div className="text-muted text-sm mt-1">
+                    {t.description || "—"}
+                  </div>
+                  <div className="text-muted text-xs mt-1 font-mono">
+                    {t.id}
+                  </div>
                 </div>
                 <Button
                   variant="secondary"
                   onClick={() => handleDownload(t)}
                   disabled={downloadingId != null}
                 >
-                  {downloadingId === t.id ? 'Downloading…' : 'Download'}
+                  {downloadingId === t.id ? "Downloading…" : "Download"}
                 </Button>
               </div>
             </Card>
@@ -145,9 +169,12 @@ export default function Templates() {
             className="bg-surface rounded-lg shadow-xl max-w-md w-full p-6"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-lg font-semibold text-gray-800 mb-3">Add template</h3>
+            <h3 className="text-lg font-semibold text-gray-800 mb-3">
+              Add template
+            </h3>
             <p className="text-muted text-sm mb-4">
-              Create a template with a name and optional description. The ID is generated by the server.
+              Create a template with a name and optional description. The ID is
+              generated by the server.
             </p>
             <form onSubmit={handleAdd}>
               {createError && (
@@ -155,7 +182,10 @@ export default function Templates() {
                   <ErrorBanner message={createError} compact />
                 </div>
               )}
-              <label htmlFor="template-name" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="template-name"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Name
               </label>
               <input
@@ -167,7 +197,10 @@ export default function Templates() {
                 placeholder="e.g. Banking – Conservative"
                 required
               />
-              <label htmlFor="template-desc" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="template-desc"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Description (optional)
               </label>
               <input
@@ -185,21 +218,25 @@ export default function Templates() {
                   onClick={() => {
                     setShowAddModal(false);
                     setCreateError(null);
-                    setName('');
-                    setDescription('');
+                    setName("");
+                    setDescription("");
                   }}
                   disabled={creating}
                 >
                   Cancel
                 </Button>
-                <Button type="submit" variant="primary" disabled={creating || !name.trim()}>
-                  {creating ? 'Creating…' : 'Create'}
+                <Button
+                  type="submit"
+                  variant="primary"
+                  disabled={creating || !name.trim()}
+                >
+                  {creating ? "Creating…" : "Create"}
                 </Button>
               </div>
             </form>
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

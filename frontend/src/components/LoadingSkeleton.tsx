@@ -1,8 +1,8 @@
-/**
- * Reusable card-style loading skeleton. Use for lists (resumes, etc.).
- * @param {number} count - Number of skeleton cards to show (default 3)
- */
-export default function LoadingSkeleton({ count = 3 }) {
+interface LoadingSkeletonProps {
+  count?: number;
+}
+
+export default function LoadingSkeleton({ count = 3 }: LoadingSkeletonProps) {
   return (
     <div className="space-y-4">
       {Array.from({ length: count }, (_, i) => (
