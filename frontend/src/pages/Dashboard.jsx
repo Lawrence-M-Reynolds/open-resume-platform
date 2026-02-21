@@ -59,7 +59,15 @@ export default function Dashboard() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-gray-800 mb-6">Resumes</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-semibold text-gray-800">Resumes</h1>
+        <Link
+          to="/resumes/new"
+          className="px-4 py-2 bg-primary text-white rounded font-medium hover:bg-primary-dark transition-colors duration-200"
+        >
+          Create resume
+        </Link>
+      </div>
       {resumes.length === 0 ? (
         <div className="bg-surface rounded-lg border border-gray-200 shadow-sm p-8 text-center">
           <p className="text-muted mb-4">No resumes yet.</p>
