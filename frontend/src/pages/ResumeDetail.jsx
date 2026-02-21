@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { getResume, generateDocx } from '../api/resumes.js';
+import { getResume, generateDocx, listVersions, createVersion } from '../api/resumes.js';
 import { formatDate } from '../utils/date.js';
 import { downloadBlob } from '../utils/download.js';
 import { slugify } from '../utils/slug.js';
@@ -17,6 +17,12 @@ export default function ResumeDetail() {
   const [error, setError] = useState(null);
   const [downloading, setDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState(null);
+  const [versions, setVersions] = useState([]);
+  const [loadingVersions, setLoadingVersions] = useState(false);
+  const [showCreateVariant, setShowCreateVariant] = useState(false);
+  const [variantLabel, setVariantLabel] = useState('');
+  const [creatingVariant, setCreatingVariant] = useState(false);
+  const [variantError, setVariantError] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -34,6 +40,35 @@ export default function ResumeDetail() {
       });
     return () => { cancelled = true; };
   }, [id]);
+
+  const loadVersions = () => {
+    setLoadingVersions(true);
+    listVersions(id)
+      .then((data) => setVersions(data))
+      .catch(() => setVersions([]))
+      .finally(() => setLoadingVersions(false));
+  };
+
+  useEffect(() => {
+    if (!resume) return;
+    loadVersions();
+  }, [resume?.id]);
+
+  const handleCreateVariant = async (e) => {
+    e.preventDefault();
+    setCreatingVariant(true);
+    setVariantError(null);
+    try {
+      await createVersion(id, { label: variantLabel.trim() || undefined });
+      setShowCreateVariant(false);
+      setVariantLabel('');
+      loadVersions();
+    } catch (e) {
+      setVariantError(e.message);
+    } finally {
+      setCreatingVariant(false);
+    }
+  };
 
   const handleDownload = async () => {
     setDownloading(true);
@@ -75,6 +110,12 @@ export default function ResumeDetail() {
 
   const headerActions = (
     <>
+      <Button
+        variant="secondary"
+        onClick={() => setShowCreateVariant(true)}
+      >
+        Create Client Variant
+      </Button>
       <Button
         variant="secondary"
         onClick={handleDownload}
@@ -127,6 +168,65 @@ export default function ResumeDetail() {
           </pre>
         </div>
       </Card>
+
+      <div className="mt-8 max-w-3xl">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-lg font-semibold text-gray-800">Client variants</h2>
+          <Button variant="secondary" onClick={() => setShowCreateVariant(true)}>
+            Create Client Variant
+          </Button>
+        </div>
+        <Card className="p-6">
+          {loadingVersions ? (
+            <p className="text-muted text-sm">Loading…</p>
+          ) : versions.length === 0 ? (
+            <p className="text-muted text-sm">No variants yet. Create a snapshot for a specific client or opportunity.</p>
+          ) : (
+            <ul className="space-y-3">
+              {versions.map((v) => (
+                <li key={v.id} className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+                  <span className="font-medium text-gray-900">v{v.versionNo}</span>
+                  <span className="text-gray-600">{v.label || '—'}</span>
+                  <span className="text-muted">{formatDate(v.createdAt)}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+      </div>
+
+      {showCreateVariant && (
+        <div className="fixed inset-0 z-10 flex items-center justify-center bg-black/50 p-4" onClick={() => !creatingVariant && setShowCreateVariant(false)}>
+          <div className="bg-surface rounded-lg shadow-xl max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-semibold text-gray-800 mb-3">Create Client Variant</h3>
+            <p className="text-muted text-sm mb-4">Snapshot the current resume. Optionally add a label (e.g. &quot;For Acme&quot;).</p>
+            <form onSubmit={handleCreateVariant}>
+              {variantError && (
+                <div className="mb-3">
+                  <ErrorBanner message={variantError} compact />
+                </div>
+              )}
+              <label htmlFor="variant-label" className="block text-sm font-medium text-gray-700 mb-1">Label (optional)</label>
+              <input
+                id="variant-label"
+                type="text"
+                value={variantLabel}
+                onChange={(e) => setVariantLabel(e.target.value)}
+                className="w-full rounded border border-gray-300 px-3 py-2 text-gray-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary mb-4"
+                placeholder="e.g. For Acme"
+              />
+              <div className="flex gap-2 justify-end">
+                <Button type="button" variant="secondary" onClick={() => { setShowCreateVariant(false); setVariantError(null); setVariantLabel(''); }} disabled={creatingVariant}>
+                  Cancel
+                </Button>
+                <Button type="submit" variant="primary" disabled={creatingVariant}>
+                  {creatingVariant ? 'Creating…' : 'Create'}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
