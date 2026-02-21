@@ -1,10 +1,13 @@
 package com.reynolds.open_resume_platform.restcontrollers;
 
 import com.reynolds.open_resume_platform.resumes.command.CreateResumeCommand;
+import com.reynolds.open_resume_platform.resumes.command.CreateResumeVersionCommand;
 import com.reynolds.open_resume_platform.resumes.command.UpdateResumeCommand;
 import com.reynolds.open_resume_platform.resumes.domain.Resume;
+import com.reynolds.open_resume_platform.resumes.domain.ResumeVersion;
 import com.reynolds.open_resume_platform.resumes.service.ResumeDocxService;
 import com.reynolds.open_resume_platform.resumes.service.ResumeService;
+import com.reynolds.open_resume_platform.resumes.service.ResumeVersionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -33,10 +36,12 @@ public class ResumeController {
 
     private final ResumeService resumeService;
     private final ResumeDocxService resumeDocxService;
+    private final ResumeVersionService resumeVersionService;
 
-    public ResumeController(ResumeService resumeService, ResumeDocxService resumeDocxService) {
+    public ResumeController(ResumeService resumeService, ResumeDocxService resumeDocxService, ResumeVersionService resumeVersionService) {
         this.resumeService = resumeService;
         this.resumeDocxService = resumeDocxService;
+        this.resumeVersionService = resumeVersionService;
     }
 
     @Operation(summary = "Create a resume", description = "Creates a new draft resume. Returns the created resume with id, status DRAFT, latestVersionNo 1.")
@@ -80,6 +85,32 @@ public class ResumeController {
         return resumeService.update(id, command)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @Operation(summary = "Create version snapshot", description = "Creates a named snapshot (client variant) of the resume. Optional label, markdown, templateId; when omitted, current resume values are used.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Version created"),
+            @ApiResponse(responseCode = "404", description = "Resume not found")
+    })
+    @PostMapping("/{id}/versions")
+    public ResponseEntity<ResumeVersion> createVersion(@PathVariable String id, @RequestBody(required = false) CreateResumeVersionCommand command) {
+        CreateResumeVersionCommand payload = command != null ? command : new CreateResumeVersionCommand(null, null, null);
+        return resumeVersionService.create(id, payload)
+                .map(v -> ResponseEntity.status(201).body(v))
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @Operation(summary = "List versions", description = "Returns all version snapshots for the resume, ordered by version number.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "List of versions (may be empty)"),
+            @ApiResponse(responseCode = "404", description = "Resume not found")
+    })
+    @GetMapping("/{id}/versions")
+    public ResponseEntity<List<ResumeVersion>> listVersions(@PathVariable String id) {
+        if (resumeService.getById(id).isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(resumeVersionService.listByResumeId(id));
     }
 
     @Operation(summary = "Generate DOCX", description = "Generates a DOCX file for the resume. Returns the file for download or 404.")
