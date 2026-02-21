@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import type { MouseEventHandler, ReactNode } from 'react';
 
 const variants = {
   primary:
@@ -9,15 +10,18 @@ const variants = {
     'inline-flex items-center justify-center min-h-[44px] px-4 py-3 sm:py-2 bg-error text-white rounded font-medium hover:opacity-90',
 };
 
-/**
- * Button or link styled as a button. Use `to` for navigation, `onClick` for actions.
- * @param {'primary' | 'secondary' | 'danger'} [variant='primary']
- * @param {string} [to] - If set, renders a React Router Link
- * @param {() => void} [onClick]
- * @param {'button' | 'submit'} [type='button'] - For native button only
- * @param {boolean} [disabled]
- * @param {React.ReactNode} children
- */
+type ButtonVariant = keyof typeof variants;
+
+interface ButtonProps {
+  variant?: ButtonVariant;
+  to?: string;
+  onClick?: MouseEventHandler<HTMLButtonElement>;
+  type?: 'button' | 'submit' | 'reset';
+  disabled?: boolean;
+  children: ReactNode;
+  className?: string;
+}
+
 export default function Button({
   variant = 'primary',
   to,
@@ -26,14 +30,13 @@ export default function Button({
   disabled = false,
   children,
   className: classNameProp,
-  ...rest
-}) {
+}: ButtonProps) {
   const baseClass = variants[variant] ?? variants.primary;
   const className = classNameProp ? `${baseClass} ${classNameProp}` : baseClass;
 
   if (to != null && to !== '') {
     return (
-      <Link to={to} className={className} {...rest}>
+      <Link to={to} className={className}>
         {children}
       </Link>
     );
@@ -45,7 +48,6 @@ export default function Button({
       onClick={onClick}
       disabled={disabled}
       className={className}
-      {...rest}
     >
       {children}
     </button>

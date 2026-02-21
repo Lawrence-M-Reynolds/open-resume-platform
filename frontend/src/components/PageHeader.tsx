@@ -1,15 +1,21 @@
 import { Link } from 'react-router-dom';
+import type { ReactNode } from 'react';
 
 const linkClass = 'text-muted hover:text-primary transition-colors duration-200 text-sm font-medium';
 
-/**
- * Page header with back link, optional title, and optional actions (e.g. buttons).
- * @param {string} backTo - Path for the back link
- * @param {string} backLabel - Label for the back link (e.g. "← Resumes")
- * @param {string | null} [title] - Optional page title (h1). Omit or null for loading/error views
- * @param {React.ReactNode} [actions] - Optional actions to show on the right (e.g. Edit + Download)
- */
-export default function PageHeader({ backTo, backLabel, title = null, actions }) {
+interface PageHeaderProps {
+  backTo: string;
+  backLabel: string;
+  title?: string | null;
+  actions?: ReactNode;
+}
+
+export default function PageHeader({
+  backTo,
+  backLabel,
+  title = null,
+  actions,
+}: PageHeaderProps) {
   return (
     <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
       <div className="flex flex-wrap items-center gap-2 sm:gap-4 min-w-0">
