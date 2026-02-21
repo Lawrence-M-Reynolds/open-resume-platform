@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { createResume } from '../api/resumes.js';
 import ErrorBanner from '../components/ErrorBanner.jsx';
+import PageHeader from '../components/PageHeader.jsx';
 
 const MIN_TITLE_LENGTH = 3;
 
@@ -44,15 +45,7 @@ export default function NewResume() {
 
   return (
     <div>
-      <div className="mb-6 flex items-center gap-4">
-        <Link
-          to="/"
-          className="text-muted hover:text-primary transition-colors duration-200 text-sm font-medium"
-        >
-          ← Resumes
-        </Link>
-        <h1 className="text-2xl font-semibold text-gray-800">New resume</h1>
-      </div>
+      <PageHeader backTo="/" backLabel="← Resumes" title="New resume" />
 
       <form
         onSubmit={handleSubmit}

@@ -6,6 +6,7 @@ import { downloadBlob } from '../utils/download.js';
 import { slugify } from '../utils/slug.js';
 import ErrorBanner from '../components/ErrorBanner.jsx';
 import LoadingSkeleton from '../components/LoadingSkeleton.jsx';
+import PageHeader from '../components/PageHeader.jsx';
 
 export default function ResumeDetail() {
   const { id } = useParams();
@@ -48,14 +49,7 @@ export default function ResumeDetail() {
   if (loading) {
     return (
       <div>
-        <div className="mb-6">
-          <Link
-            to="/"
-            className="text-muted hover:text-primary transition-colors duration-200 text-sm font-medium"
-          >
-            ← Resumes
-          </Link>
-        </div>
+        <PageHeader backTo="/" backLabel="← Resumes" />
         <LoadingSkeleton count={1} />
       </div>
     );
@@ -64,14 +58,7 @@ export default function ResumeDetail() {
   if (error) {
     return (
       <div>
-        <div className="mb-6">
-          <Link
-            to="/"
-            className="text-muted hover:text-primary transition-colors duration-200 text-sm font-medium"
-          >
-            ← Resumes
-          </Link>
-        </div>
+        <PageHeader backTo="/" backLabel="← Resumes" />
         <ErrorBanner
           message={error}
           action={
@@ -87,35 +74,33 @@ export default function ResumeDetail() {
     );
   }
 
+  const headerActions = (
+    <>
+      <button
+        type="button"
+        onClick={handleDownload}
+        disabled={downloading}
+        className="px-4 py-2 border border-gray-300 rounded font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+      >
+        {downloading ? 'Downloading…' : 'Download DOCX'}
+      </button>
+      <Link
+        to={`/resumes/${resume.id}/edit`}
+        className="px-4 py-2 bg-primary text-white rounded font-medium hover:bg-primary-dark transition-colors duration-200"
+      >
+        Edit
+      </Link>
+    </>
+  );
+
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between gap-4 flex-wrap">
-        <div className="flex items-center gap-4">
-          <Link
-            to="/"
-            className="text-muted hover:text-primary transition-colors duration-200 text-sm font-medium"
-          >
-            ← Resumes
-          </Link>
-          <h1 className="text-2xl font-semibold text-gray-800">{resume.title}</h1>
-        </div>
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={handleDownload}
-            disabled={downloading}
-            className="px-4 py-2 border border-gray-300 rounded font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-          >
-            {downloading ? 'Downloading…' : 'Download DOCX'}
-          </button>
-          <Link
-            to={`/resumes/${resume.id}/edit`}
-            className="px-4 py-2 bg-primary text-white rounded font-medium hover:bg-primary-dark transition-colors duration-200"
-          >
-            Edit
-          </Link>
-        </div>
-      </div>
+      <PageHeader
+        backTo="/"
+        backLabel="← Resumes"
+        title={resume.title}
+        actions={headerActions}
+      />
 
       {downloadError && (
         <div className="mb-4">
