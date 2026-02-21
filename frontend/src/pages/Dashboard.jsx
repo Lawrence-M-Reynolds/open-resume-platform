@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { listResumes } from '../api/resumes.js';
+import Button from '../components/Button.jsx';
 import ErrorBanner from '../components/ErrorBanner.jsx';
 import LoadingSkeleton from '../components/LoadingSkeleton.jsx';
 import { formatDate } from '../utils/date.js';
@@ -46,15 +47,7 @@ export default function Dashboard() {
         </h1>
         <ErrorBanner
           message={error}
-          action={
-            <button
-              type="button"
-              onClick={load}
-              className="px-4 py-2 bg-error text-white rounded font-medium hover:opacity-90"
-            >
-              Retry
-            </button>
-          }
+          action={<Button variant="danger" onClick={load}>Retry</Button>}
         />
       </div>
     );
@@ -64,22 +57,16 @@ export default function Dashboard() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-semibold text-gray-800">Resumes</h1>
-        <Link
-          to="/resumes/new"
-          className="px-4 py-2 bg-primary text-white rounded font-medium hover:bg-primary-dark transition-colors duration-200"
-        >
+        <Button to="/resumes/new" variant="primary">
           Create resume
-        </Link>
+        </Button>
       </div>
       {resumes.length === 0 ? (
         <div className="bg-surface rounded-lg border border-gray-200 shadow-sm p-8 text-center">
           <p className="text-muted mb-4">No resumes yet.</p>
-          <Link
-            to="/resumes/new"
-            className="inline-block px-4 py-2 bg-primary text-white rounded font-medium hover:bg-primary-dark transition-colors duration-200"
-          >
+          <Button to="/resumes/new" variant="primary">
             Create your first resume
-          </Link>
+          </Button>
         </div>
       ) : (
       <div className="space-y-4">
